@@ -11,11 +11,11 @@ module top(
 	input  write_weight_en,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_act,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_weight,
-	output [2*`ARRAYWIDTH*`DATASIZE-1:0] out_res
+	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res
 );
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_act;
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_weight;
-	wire [2*`ARRAYWIDTH*`DATASIZE-1:0] out_sum;
+	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_sum;
 	input_buffer u_input_buffer(
 		.clk(clk),
 		.rst(rst),

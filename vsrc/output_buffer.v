@@ -4,8 +4,8 @@ module output_buffer (
 	input rst,
 	input load_en,
 	input out_en,
-	input  [2*`ARRAYWIDTH*`DATASIZE-1:0] in_res,
-	output [2*`ARRAYWIDTH*`DATASIZE-1:0] out_res
+	input  [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] in_res,
+	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res
 );
 	
 
@@ -28,8 +28,8 @@ module output_buffer (
 				.rst(rst),
 				.load_en(load_ena[i]),
 				.out_en(out_en),
-				.in(in_res[2*(i+1)*`DATASIZE-1:2*i*`DATASIZE]),
-				.out(out_res[2*(i+1)*`DATASIZE-1:2*i*`DATASIZE])
+				.in(  in_res[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE]),
+				.out(out_res[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE])
 			);
 		end
 	endgenerate

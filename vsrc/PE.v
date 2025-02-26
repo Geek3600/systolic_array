@@ -7,8 +7,8 @@ module PE (
 	input  [`DATASIZE-1:0] in_up_weight,
 	output reg [`DATASIZE-1:0] out_down_weight,
 
-	input  [`DATASIZE*2-1:0] in_up_psum,
-	output reg [`DATASIZE*2-1:0] out_down_psum,
+	input  [`OUTPUT_BUF_DATASIZE-1:0] in_up_psum,
+	output reg [`OUTPUT_BUF_DATASIZE-1:0] out_down_psum,
 
 	input  [`DATASIZE-1:0] in_left_act,
 	output reg [`DATASIZE-1:0] out_right_act

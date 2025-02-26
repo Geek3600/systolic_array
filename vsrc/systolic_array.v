@@ -5,10 +5,10 @@ module systolic_array (
 	input  write_weight_en,
 	input  [`DATASIZE*`ARRAYWIDTH-1:0]    in_up_weight,
 	input  [`DATASIZE*`ARRAYHEIGHT-1:0]   in_left_act,
-	output [2*`ARRAYWIDTH*`DATASIZE-1:0]  out_sum
+	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0]  out_sum
 );
 
-	wire [2*`ARRAYHEIGHT*`ARRAYWIDTH*`DATASIZE-1:0] out_down_psum;
+	wire [`ARRAYHEIGHT*`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_down_psum;
 	wire [`ARRAYHEIGHT*`ARRAYWIDTH*`DATASIZE-1:0] out_down_weight;
 	genvar i;
 	generate 
@@ -20,8 +20,8 @@ module systolic_array (
 					.write_weight_en(write_weight_en),
 					.in_up_weight(in_up_weight),
 					.out_down_weight(out_down_weight[`DATASIZE*`ARRAYWIDTH-1:0]),
-					.in_up_psum({2*`DATASIZE*`ARRAYWIDTH{1'b0}}),
-					.out_down_psum(out_down_psum[2*`DATASIZE*`ARRAYWIDTH-1:0]),
+					.in_up_psum({`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE{1'b0}}),
+					.out_down_psum(out_down_psum[`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0]),
 					.in_left_act(in_left_act[`DATASIZE-1:0])
 				);
 			end
@@ -32,12 +32,12 @@ module systolic_array (
 					.write_weight_en(write_weight_en),
 					.in_up_weight(out_down_weight[i*`DATASIZE*`ARRAYWIDTH-1:(i-1)*`DATASIZE*`ARRAYWIDTH]),
 					.out_down_weight(out_down_weight[(i+1)*`DATASIZE*`ARRAYWIDTH-1:i*`DATASIZE*`ARRAYWIDTH]),
-					.in_up_psum(out_down_psum[i*2*`DATASIZE*`ARRAYWIDTH-1:(i-1)*2*`DATASIZE*`ARRAYWIDTH]),
-					.out_down_psum(out_down_psum[(i+1)*2*`DATASIZE*`ARRAYWIDTH-1:i*2*`DATASIZE*`ARRAYWIDTH]),
+					.in_up_psum(out_down_psum[i*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:(i-1)*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH]),
+					.out_down_psum(out_down_psum[(i+1)*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:i*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH]),
 					.in_left_act(in_left_act[(i+1)*`DATASIZE-1:i*`DATASIZE])
 				);
 			end
 		end
 	endgenerate
-	assign out_sum = out_down_psum[2*`ARRAYHEIGHT*`DATASIZE*`ARRAYWIDTH-1:(`ARRAYHEIGHT-1)*2*`DATASIZE*`ARRAYWIDTH];
+	assign out_sum = out_down_psum[`ARRAYHEIGHT*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:(`ARRAYHEIGHT-1)*`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH];
 endmodule

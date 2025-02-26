@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1740457342" />
+    <testcase name="run_test" classname="test_top" file="/home/yuanhuayang/systolic-array-cocotb-test/test_top.py" lineno="22" time="0.0022420883178710938" sim_time_ns="180000.001" ratio_time="80282297.34095109" />
+  </testsuite>
+</testsuites>
