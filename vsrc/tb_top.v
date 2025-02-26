@@ -19,7 +19,7 @@ module tb_top();
 
 
 	//=================测试行为===================
-	reg [10:0] cnt;
+	reg [20:0] cnt;
 	wire input_buffer_load_en;
 	wire input_buffer_out_en;
 	wire weight_buffer_load_en;
@@ -35,16 +35,11 @@ module tb_top();
 	reg [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] ref_res [`ARRAYHEIGHT-1:0];
 	reg [7:0] res_idx;
 
-	initial begin
-		$readmemh("test/dat4", mem);
-		$readmemh("test/dat4_res", ref_res);
-		res_idx = 0;
-	end
 
 	always@(posedge clk) begin
 		if (output_buffer_out_en) begin
-			// $display("%h",output_buffer_out_en);
-			$display("%d",res_idx);
+			$display("%h",out_res);
+			// $display("%d",res_idx);
 			res_idx <= res_idx + 1;
 			if (out_res == ref_res[res_idx])
 				$display("pass");
@@ -56,7 +51,7 @@ module tb_top();
 	always @(posedge clk) begin
 		if (rst) cnt <= 0;
 		else cnt <= cnt + 1; 
-		// $display("%d",cnt);
+		$display("%d",cnt);
 	end
 	assign in_act = (cnt >= `ARRAYHEIGHT && cnt < `ARRAYHEIGHT + `ARRAYHEIGHT) ? mem[cnt][`DATASIZE*`ARRAYWIDTH-1:0] : 0;
 
@@ -73,6 +68,11 @@ module tb_top();
 	assign output_buffer_out_en = (cnt >= 4*`ARRAYHEIGHT + `ARRAYWIDTH - 1 && cnt < 4*`ARRAYHEIGHT + `ARRAYWIDTH - 1 + `ARRAYHEIGHT) ? 1 : 0; 
 	
 	
+	initial begin
+		$readmemh("test/dat4", mem);
+		$readmemh("test/dat4_res", ref_res);
+		res_idx = 0;
+	end
 
 	top dut_top(
 		.clk(clk),
@@ -93,10 +93,10 @@ module tb_top();
 
 
 	//================生成波形====================
-	// initial begin
-		// $dumpfile("test.vcd");
-		// $dumpvars(0, tb_top);
-	// end
+	initial begin
+		$dumpfile("test.vcd");
+		$dumpvars(0, tb_top);
+	end
 	//================生成波形====================
 	always @(posedge clk) begin
 		if (res_idx == `ARRAYHEIGHT) $finish ;

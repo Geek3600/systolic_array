@@ -4,8 +4,8 @@
 #include<time.h>
 #include<cmath>
 #include<stdint.h>
-#define ARRAYWIDTH 64
-#define ARRAYHEIGHT 64
+#define ARRAYWIDTH 4
+#define ARRAYHEIGHT 4
 #define DATASIZE 8
 uint8_t matA[ARRAYHEIGHT][ARRAYWIDTH];
 uint8_t matB[ARRAYHEIGHT][ARRAYWIDTH];
@@ -30,10 +30,10 @@ void gen_test_mat()
 	for (int i = 0 ; i < ARRAYHEIGHT; i++)
 		for (int j = 0; j < ARRAYWIDTH; j++)
 		{
-			matA[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
-			matB[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
-			// matA[i][j] = a; 
-			// matB[i][j] = a++; 
+			// matA[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
+			// matB[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
+			matA[i][j] = a; 
+			matB[i][j] = a++; 
 		}
 	
 	for (int i = 0; i < ARRAYHEIGHT; i++)
