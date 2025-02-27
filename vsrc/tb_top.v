@@ -72,8 +72,8 @@ module tb_top();
 	
 	
 	initial begin
-		$readmemh("test/dat32", mem);
-		$readmemh("test/dat32_res", ref_res);
+		$readmemh("test/dat4", mem);
+		$readmemh("test/dat4_res", ref_res);
 		res_idx = 0;
 	end
 
@@ -91,65 +91,6 @@ module tb_top();
 		.in_weight(in_weight),
 		.out_res(out_res)
 	);
-	// initial begin
-		// #CLOCK_PERIOD;
-		// write_weight_en = 0;
-		// weight_buffer_load_en = 1;
-		// weight_buffer_out_en = 0;
-		// input_buffer_load_en = 0;
-		// input_buffer_out_en = 0;
-		// output_buffer_load_en = 0;
-		// output_buffer_out_en = 0;
-		// in_weight = 'h04030201;
-		// in_act = 0;
-		// #CLOCK_PERIOD;
-		// in_weight = 'h08070605;
-		// #CLOCK_PERIOD;
-		// in_weight = 'h0c0b0a09;
-		// #CLOCK_PERIOD;
-		// in_weight = 'h100f0e0d;
-		// #CLOCK_PERIOD;
-		
-		// write_weight_en = 1;
-		// weight_buffer_load_en = 0;
-		// weight_buffer_out_en = 1;
-		// input_buffer_load_en = 1;
-		// input_buffer_out_en = 0;
-		// output_buffer_load_en = 0;
-		// output_buffer_out_en = 0;
-		// in_act = 'h04030201;
-		// #CLOCK_PERIOD;
-		// in_act = 'h08070605;
-		// #CLOCK_PERIOD;
-		// in_act = 'h0c0b0a09;
-		// #CLOCK_PERIOD;
-		// in_act = 'h100f0e0d;
-		// #CLOCK_PERIOD;
-
-		// write_weight_en = 0;
-		// weight_buffer_load_en = 0;
-		// weight_buffer_out_en = 0;
-		// input_buffer_load_en = 0;
-		// input_buffer_out_en = 1;
-		// output_buffer_load_en = 0;
-		// output_buffer_out_en = 0;
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// output_buffer_load_en = 1;
-		// #(4*CLOCK_PERIOD);
-
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// #(4*CLOCK_PERIOD);
-		// output_buffer_load_en = 0;
-		// output_buffer_out_en = 1;
-	// end
-
 
 	//================生成波形====================
 	initial begin
