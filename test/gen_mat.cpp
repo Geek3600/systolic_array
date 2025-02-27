@@ -4,8 +4,8 @@
 #include<time.h>
 #include<cmath>
 #include<stdint.h>
-#define ARRAYWIDTH 4
-#define ARRAYHEIGHT 4
+#define ARRAYWIDTH 32
+#define ARRAYHEIGHT 32
 #define DATASIZE 8
 uint8_t matA[ARRAYHEIGHT][ARRAYWIDTH];
 uint8_t matB[ARRAYHEIGHT][ARRAYWIDTH];
@@ -16,9 +16,9 @@ long unsigned int matrixY[ARRAYHEIGHT];
 void gen_test_mat()
 {
 	FILE* fp = NULL;
-	fp = fopen("./dat4", "w+");
+	fp = fopen("./dat32", "w+");
 	FILE* fp_res = NULL;
-	fp_res = fopen("./dat4_res", "w+");
+	fp_res = fopen("./dat32_res", "w+");
 	if (fp == NULL || fp_res == NULL) 
 	{
 		printf("Fail to open file\n");
@@ -30,10 +30,10 @@ void gen_test_mat()
 	for (int i = 0 ; i < ARRAYHEIGHT; i++)
 		for (int j = 0; j < ARRAYWIDTH; j++)
 		{
-			// matA[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
-			// matB[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
-			matA[i][j] = a; 
-			matB[i][j] = a++; 
+			matA[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
+			matB[i][j] = rand() % (uint8_t)pow(2, DATASIZE); 
+			// matA[i][j] = a; 
+			// matB[i][j] = a++; 
 		}
 	
 	for (int i = 0; i < ARRAYHEIGHT; i++)
