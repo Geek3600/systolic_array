@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module top(
 	input  clk,
 	input rst,
@@ -12,6 +11,8 @@ module top(
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_act,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_weight,
 	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res
+	// output  [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_sum
+
 );
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_act;
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_weight;

@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module weight_shifter_register (
 	input clk,
 	input rst,

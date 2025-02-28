@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module PE_row (
 	input clk,
 	input rst,

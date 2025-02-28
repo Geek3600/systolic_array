@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module weight_buffer (
 	input clk,
 	input rst,

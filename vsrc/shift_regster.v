@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module shifter_register(
 	input clk,
 	input rst,

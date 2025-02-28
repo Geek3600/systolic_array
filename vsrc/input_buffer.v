@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module input_buffer (
 	input clk,
 	input rst,

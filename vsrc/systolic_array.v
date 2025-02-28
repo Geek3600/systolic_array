@@ -1,4 +1,3 @@
-`include "vsrc/config.v"
 module systolic_array (
 	input  clk,
 	input  rst,

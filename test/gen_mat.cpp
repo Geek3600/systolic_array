@@ -16,9 +16,9 @@ long unsigned int matrixY[ARRAYHEIGHT];
 void gen_test_mat()
 {
 	FILE* fp = NULL;
-	fp = fopen("./dat4", "w+");
+	fp = fopen("./dat64", "w+");
 	FILE* fp_res = NULL;
-	fp_res = fopen("./dat4_res", "w+");
+	fp_res = fopen("./dat64_res", "w+");
 	if (fp == NULL || fp_res == NULL) 
 	{
 		printf("Fail to open file\n");
