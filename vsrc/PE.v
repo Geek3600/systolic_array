@@ -1,4 +1,5 @@
 
+`timescale 1ns/1ns
 module PE (
 	input clk,
 	input rst,
@@ -23,20 +24,6 @@ module PE (
 		else if (write_weight_en) weight <= in_up_weight;
 		else weight <= weight;
 	end
-
-	// // out_right_act输出
-	// always @(posedge clk) begin
-		// if (rst) out_right_act <= 0;
-		// else if (write_weight_en) out_right_act <= 0;
-		// else out_right_act <= in_left_act;
-	// end
-	
-	// // out_down_psum输出
-	// always @(posedge clk) begin
-		// if (rst) out_down_psum <= 0;
-		// else if (write_weight_en) out_down_psum <= 0;
-		// else out_down_psum <= in_up_psum + weight * in_left_act;
-	// end
 
 	// out_down_weight输出
 	always @(posedge clk) begin
@@ -76,7 +63,6 @@ module PE (
 
 	dsp_macro_0 u_dsp (
 		.CLK(clk),  // input wire CLK
-		.SCLR(rst),  // input wire SCLR
 		.A(in_left_act),      // input wire [7 : 0] A
 		.B(weight_q),      // input wire [7 : 0] B
 		.C(in_up_psum[`OUTPUT_BUF_DATASIZE-2:0]),      // input wire [30 : 0] C

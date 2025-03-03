@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module output_buffer (
 	input clk,
 	input rst,
@@ -40,7 +41,7 @@ module output_buffer (
 
 	genvar i;
 	generate 
-		for (i = 0; i < `ARRAYWIDTH; i = i + 1) begin
+		for (i = 0; i < `ARRAYWIDTH; i = i + 1) begin: output_fifo
 			shifter_register u_shifter_register (
 				.clk(clk),
 				.rst(rst),

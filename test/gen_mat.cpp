@@ -7,12 +7,10 @@
 #define ARRAYWIDTH 64
 #define ARRAYHEIGHT 64
 #define DATASIZE 8
-uint8_t matA[ARRAYHEIGHT][ARRAYWIDTH];
-uint8_t matB[ARRAYHEIGHT][ARRAYWIDTH];
-uint32_t matY[ARRAYHEIGHT][ARRAYWIDTH];
-long unsigned int matrixA[ARRAYHEIGHT];
-long unsigned int matrixB[ARRAYHEIGHT];
-long unsigned int matrixY[ARRAYHEIGHT];
+int8_t matA[ARRAYHEIGHT][ARRAYWIDTH];
+int8_t matB[ARRAYHEIGHT][ARRAYWIDTH];
+int32_t matY[ARRAYHEIGHT][ARRAYWIDTH];
+
 void gen_test_mat()
 {
 	FILE* fp = NULL;
@@ -39,12 +37,12 @@ void gen_test_mat()
 	for (int i = 0; i < ARRAYHEIGHT; i++)
 		for (int j = 0 ;j < ARRAYWIDTH; j++)
 			for (int k = 0 ;k < ARRAYHEIGHT; k++)
-				matY[i][j] += (uint16_t)matB[i][k] * (uint16_t)matA[k][j];
+				matY[i][j] += matB[i][k] * matA[k][j];
 	for (int i = 0; i < ARRAYHEIGHT; i++)
 	{
 		for (int j = ARRAYWIDTH-1; j >= 0; j--)
 		{
-			fprintf(fp, "%02x",matA[i][j]);
+			fprintf(fp, "%02x",(uint8_t)matA[i][j]);
 			printf("%d ",matA[i][j]);
 		}
 		printf("\n");
@@ -55,7 +53,7 @@ void gen_test_mat()
 	{
 		for (int j = ARRAYWIDTH-1; j >= 0; j--)
 		{
-			fprintf(fp, "%02x",matB[i][j]);
+			fprintf(fp, "%02x",(uint8_t)matB[i][j]);
 			printf("%d ",matB[i][j]);
 		}
 		printf("\n");
@@ -79,5 +77,9 @@ void gen_test_mat()
 int main()
 {
 	gen_test_mat();
+	// int8_t a = -127;
+	// int8_t b = 1;
+	// int32_t c = a* b;
+	// printf("%x\n",c);
 	return 0;
 }

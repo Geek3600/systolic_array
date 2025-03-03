@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module PE_row (
 	input clk,
 	input rst,

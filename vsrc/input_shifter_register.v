@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module input_shifter_register #(
 	parameter DELAY_NUM = 0
 )(

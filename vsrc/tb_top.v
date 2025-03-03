@@ -28,32 +28,28 @@ module tb_top();
 	wire [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
 	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_res;
 	reg [`DATASIZE*`ARRAYWIDTH-1:0] mem [2*`ARRAYHEIGHT-1:0];
-	// reg [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] ref_res [`ARRAYHEIGHT-1:0];
-	// reg [7:0] res_idx;
-	initial begin
-		mem[0] = 'h04030201;
-		mem[1] = 'h08070605;
-		mem[2] = 'h0c0b0a09;
-		mem[3] = 'h100f0e0d;
+	reg [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] mem_res [`ARRAYHEIGHT-1:0];
+	reg [7:0] res_idx;
 
-		mem[4] = 'h04030201;
-		mem[5] = 'h08070605;
-		mem[6] = 'h0c0b0a09;
-		mem[7] = 'h100f0e0d;
+	initial begin
+		res_idx = 0;
+		$readmemh("/home/hyyuan/systolic-array/test/dat512",mem);
+		$readmemh("/home/hyyuan/systolic-array/test/dat512_res",mem_res);
+
 		
 	end
 
-	// always@(posedge clk) begin
-	// 	if (output_buffer_out_en) begin
-	// 		// $display("%h",out_res);
-	// 		// $display("%d",res_idx);
-	// 		res_idx <= res_idx + 1;
-	// 		if (out_res == ref_res[res_idx])
-	// 			$display("pass");
-	// 		else 
-	// 			$display("fail");
-	// 	end
-	// end
+	always@(posedge clk) begin
+		if (output_buffer_out_en) begin
+			// $display("out_res: %h",out_res);
+			// $display("mem_res: %h",mem_res[res_idx]);
+			res_idx <= res_idx + 1;
+			if (out_res == mem_res[res_idx])
+				$display("pass");
+			else 
+				$display("fail");
+		end
+	end
 
 	always @(posedge clk) begin
 		if (rst) cnt <= 0;
@@ -91,8 +87,12 @@ module tb_top();
 	);
 
 	//================生成波形====================
-	// always @(posedge clk) begin
-	// 	if (res_idx == `ARRAYHEIGHT) $finish ;
+	always @(posedge clk) begin
+		if (res_idx == `ARRAYHEIGHT) $finish ;
+	end
+	// initial begin
+	// 	$fsdbDumpfile("tb_top.fsdb");
+	// 	$fsdbDumpvars("+all");
 	// end
 	// initial #1000 $finish;
 

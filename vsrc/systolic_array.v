@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module systolic_array (
 	input  clk,
 	input  rst,

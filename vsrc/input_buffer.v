@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module input_buffer (
 	input clk,
 	input rst,

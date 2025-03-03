@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module weight_shifter_register (
 	input clk,
 	input rst,

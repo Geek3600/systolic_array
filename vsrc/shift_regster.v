@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module shifter_register(
 	input clk,
 	input rst,
