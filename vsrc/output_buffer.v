@@ -9,34 +9,38 @@ module output_buffer (
 );
 	
 	reg [`ARRAYWIDTH-1:0] load_ena;
-	wire load_full;
-	wire  [`ARRAYWIDTH-1:0] load_ena_d;
-	reg [7:0] cnt;
 
+	reg [2:0] cnt_dsp_delay;
 
 	always @(posedge clk) begin
-		if (rst) cnt <= `DSP_DELAY;
+		if (rst) cnt_dsp_delay <= `DSP_DELAY;
 		else if (load_en) begin
-			if (cnt == 1) cnt <= `DSP_DELAY;
-			else cnt <= cnt - 1;
+			if (cnt_dsp_delay == 1) cnt_dsp_delay <= `DSP_DELAY;
+			else cnt_dsp_delay <= cnt_dsp_delay - 1;
 		end
-		else cnt <= cnt;
+		else cnt_dsp_delay <= cnt_dsp_delay;
 	end
 
-	assign load_full = load_ena[`ARRAYWIDTH-1];
 	always @(posedge clk) begin
-		if (rst) load_ena <= 1;
-		else if (load_en && ~load_full) begin
-			if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b1};
-			else load_ena <= load_ena;
-		end
-		else begin
-			if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b0};
-			else load_ena <= load_ena;
-		end
+		if (rst) load_ena <= 0;
+		else if (load_en && cnt_dsp_delay == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b1};
+		else load_ena <= load_ena;
 	end
 
-	assign load_ena_d = (load_en && (cnt == `DSP_DELAY)) ? load_ena : 0;
+	// assign load_full = load_ena[`ARRAYWIDTH-1];
+	// always @(posedge clk) begin
+	// 	if (rst) load_ena <= 1;
+	// 	else if (load_en && ~load_full) begin
+	// 		if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b1};
+	// 		else load_ena <= load_ena;
+	// 	end
+	// 	else begin
+	// 		if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b0};
+	// 		else load_ena <= load_ena;
+	// 	end
+	// end
+
+	// assign load_ena_d = (load_en && (cnt == `DSP_DELAY)) ? load_ena : 0;
 
 
 	genvar i;
@@ -45,7 +49,7 @@ module output_buffer (
 			shifter_register u_shifter_register (
 				.clk(clk),
 				.rst(rst),
-				.load_en(load_ena_d[i]),
+				.load_en(load_ena[i]),
 				.out_en(out_en),
 				.in( in_res[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE]),
 				.out(out_res[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE])
