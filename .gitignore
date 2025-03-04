@@ -1,5 +1,6 @@
-./*.swp
-./*.swo
-__pycache__/
-build/
-sim_build/
+scripts/*
+!scripts/template
+!scripts/gen_project.sh
+!scripts/template_config.sh
+
+.vscode
