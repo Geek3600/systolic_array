@@ -27,25 +27,21 @@ module tb_top();
 
 	wire [`DATASIZE*`ARRAYWIDTH-1:0] in_act;
 	wire [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
-	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_res;
+	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top;
 	reg [`DATASIZE*`ARRAYWIDTH-1:0] mem [2*`ARRAYHEIGHT-1:0];
 	reg [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] mem_res [`ARRAYHEIGHT-1:0];
 	reg [7:0] res_idx;
 
 	initial begin
 		res_idx = 0;
-		$readmemh("/home/hyyuan/systolic-array/test/dat16",mem);
-		$readmemh("/home/hyyuan/systolic-array/test/dat16_res",mem_res);
-
-		
+		$readmemh("/home/hyyuan/systolic-array/test/dat16_relu",mem);
+		$readmemh("/home/hyyuan/systolic-array/test/dat16_relu_res",mem_res);
 	end
 
 	always@(posedge clk) begin
-		if (output_buffer_out_en) begin
-			// $display("out_res: %h",out_res);
-			// $display("mem_res: %h",mem_res[res_idx]);
+		if (cnt > 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT) begin
 			res_idx <= res_idx + 1;
-			if (out_res == mem_res[res_idx])
+			if (out_top == mem_res[res_idx])
 				$display("pass");
 			else 
 				$display("fail");
@@ -75,7 +71,7 @@ module tb_top();
 	assign output_buffer_load_en = (cnt >= 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH && cnt < 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT) ? 1 : 0;
 	
 	// 第五步，output_buffer输出结果
-	assign output_buffer_out_en = (cnt >= 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT&& cnt < 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT +`ARRAYHEIGHT) ? 1 : 0;
+	assign output_buffer_out_en = (cnt >= 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT && cnt < 2*`ARRAYHEIGHT + `DSP_DELAY*`ARRAYWIDTH+`DSP_DELAY*(`ARRAYHEIGHT-1)+`ARRAYHEIGHT +`ARRAYHEIGHT) ? 1 : 0;
 	
 	top dut_top(
 		.clk(clk),
@@ -89,23 +85,17 @@ module tb_top();
 		.write_weight_en(write_weight_en),
 		.in_act(in_act),
 		.in_weight(in_weight),
-		.out_res(out_res)
+		.out_top(out_top)
 	);
 
 	//================生成波形====================
 	always @(posedge clk) begin
-		if (res_idx == `ARRAYHEIGHT) $finish ;
+		if (res_idx == `ARRAYHEIGHT-1) $finish ;
 	end
 	initial begin
 		$fsdbDumpfile("tb_top.fsdb");
 		$fsdbDumpvars("+all");
 	end
-	// initial #1000 $finish;
+	initial #5000 $finish;
 
 endmodule
-//     ena               en_dsp              ena_shift 
-// 0: 0000 0001         0000 0001            1111 1111
-// 4: 0000 0011         0000 0011             
-// 8: 0000 0110         0000 0111            1111 1110 
-// 12:0000 1100         0000 1111             
-// 16:0001 1000         0001 1111            1111 1100 

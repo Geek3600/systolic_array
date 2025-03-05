@@ -4,8 +4,8 @@
 #include<time.h>
 #include<cmath>
 #include<stdint.h>
-#define ARRAYWIDTH 64
-#define ARRAYHEIGHT 64
+#define ARRAYWIDTH 16
+#define ARRAYHEIGHT 16
 #define DATASIZE 8
 int8_t matA[ARRAYHEIGHT][ARRAYWIDTH];
 int8_t matB[ARRAYHEIGHT][ARRAYWIDTH];
@@ -14,9 +14,9 @@ int32_t matY[ARRAYHEIGHT][ARRAYWIDTH];
 void gen_test_mat()
 {
 	FILE* fp = NULL;
-	fp = fopen("./dat64", "w+");
+	fp = fopen("./dat16_relu", "w+");
 	FILE* fp_res = NULL;
-	fp_res = fopen("./dat64_res", "w+");
+	fp_res = fopen("./dat16_relu_res", "w+");
 	if (fp == NULL || fp_res == NULL) 
 	{
 		printf("Fail to open file\n");
@@ -64,8 +64,17 @@ void gen_test_mat()
 	{
 		for (int j = ARRAYWIDTH-1; j >= 0; j--)
 		{
-			fprintf(fp_res, "%08x",matY[i][j]);
-			printf("%d ", matY[i][j]);
+			if (matY[i][j] < 0)
+			{
+				fprintf(fp_res, "%08x",0);
+				printf("%d ", 0);
+			}
+			else
+			{
+				fprintf(fp_res, "%08x",matY[i][j]);
+				printf("%d ", matY[i][j]);
+			}
+				
 		}
 		printf("\n");
 		fprintf(fp_res, "\n");

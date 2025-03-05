@@ -12,13 +12,12 @@ module top(
 	input  write_weight_en,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_act,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_weight,
-	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res
-	// output  [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_sum
-
+	output [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_top
 );
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_act;
 	wire [`ARRAYWIDTH*`DATASIZE-1:0] out_weight;
 	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_sum;
+	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res;
 	input_buffer u_input_buffer(
 		.clk(clk),
 		.rst(rst),
@@ -50,5 +49,11 @@ module top(
 		.out_en(output_buffer_out_en),
 		.in_res(out_sum),
 		.out_res(out_res)
+	);
+	relu u_relu(
+		.clk(clk),
+		.rst(rst),
+		.in(out_res),
+		.out(out_top)
 	);
 endmodule

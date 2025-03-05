@@ -30,6 +30,8 @@ VIVADO_VERILOG_FILELIST=(
     rtl/weight_buffer.v
     rtl/weight_shifter_register.v
     rtl/config.v
+    rtl/relu_pe.v
+    rtl/relu.v
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
