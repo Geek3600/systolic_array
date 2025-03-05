@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_NAME=systolic_array
+PROJECT_NAME=sort4
 
 ###########################################
 # for tcl flow
@@ -12,39 +12,39 @@ VIVADO_SPEED=-2-i
 VIVADO_PART=\$device\$package\$speed
 
 # top module
-VIVADO_TOP_MODULES=top
+VIVADO_TOP_MODULES=sort4
 
 # block deisgn module
 VIVADO_BD_TOP_MODULES=
 
 # source files
 VIVADO_VERILOG_FILELIST=(
-    rtl/input_buffer.v
-    rtl/input_shifter_register.v
-    rtl/output_buffer.v
-    rtl/PE_row.v
-    rtl/PE.v
-    rtl/shift_regster.v
-    rtl/systolic_array.v
-    rtl/top.v
-    rtl/weight_buffer.v
-    rtl/weight_shifter_register.v
+    # rtl/input_buffer.v
+    # rtl/input_shifter_register.v
+    # rtl/output_buffer.v
+    # rtl/PE_row.v
+    # rtl/PE.v
+    # rtl/shift_regster.v
+    # rtl/systolic_array.v
+    # rtl/top.v
+    # rtl/weight_buffer.v
+    # rtl/weight_shifter_register.v
     rtl/config.v
-    rtl/relu_pe.v
-    rtl/relu.v
+    # rtl/relu_pe.v
+    # rtl/relu.v
+    rtl/softmax/sort4.v
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
 )
 VIVADO_GLOBAL_INC_FILE_LIST=
 VIVADO_XCI_FILELIST=(
-    dsp_macro_0.xci
 )
 VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
 VIVADO_XDC_FILELIST=
 VIVADO_SIM_FILELIST=(
-    tb/tb_top.v
+    tb/tb_sort4.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 

@@ -1,9 +1,9 @@
 `timescale 1ns/1ns
 `include "config.v"
-module softmax (
+module systolic_odd_even_sort (
 	input clk,
 	input rst,
-    input [`OUTPUT_BUF_DATASIZE-1:0] in,
+    input [`DATASIZE*`OUTPUT_BUF_DATASIZE-1:0] in,
     output reg [`OUTPUT_BUF_DATASIZE-1:0] out 
 );
 
