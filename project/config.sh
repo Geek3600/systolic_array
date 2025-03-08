@@ -1,6 +1,8 @@
 #!/bin/bash
 
-PROJECT_NAME=sort4
+PROJECT_NAME=sum
+# top module
+VIVADO_TOP_MODULES=sum
 
 ###########################################
 # for tcl flow
@@ -11,8 +13,7 @@ VIVADO_PACKAGE=-flga2104
 VIVADO_SPEED=-2-i
 VIVADO_PART=\$device\$package\$speed
 
-# top module
-VIVADO_TOP_MODULES=sort4
+
 
 # block deisgn module
 VIVADO_BD_TOP_MODULES=
@@ -30,9 +31,17 @@ VIVADO_VERILOG_FILELIST=(
     # rtl/weight_buffer.v
     # rtl/weight_shifter_register.v
     rtl/config.v
+    rtl/softmax/sum.v
+    # rtl/softmax/log/leading_one_detector.v
+    # rtl/softmax/log/shift.v
+    # rtl/register.v
+    # rtl/softmax/log/constant_multipler.v
     # rtl/relu_pe.v
     # rtl/relu.v
-    rtl/softmax/sort4.v
+    # rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
+    # rtl/softmax/systolic_odd_even_sort/sort_pe.v
+    # rtl/softmax/systolic_odd_even_sort/sort4.v
+    # rtl/softmax/systolic_odd_even_sort/sort_controller.v
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
@@ -44,7 +53,7 @@ VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
 VIVADO_XDC_FILELIST=
 VIVADO_SIM_FILELIST=(
-    tb/tb_sort4.v
+    tb/tb_sum.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 

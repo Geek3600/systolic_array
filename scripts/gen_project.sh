@@ -476,6 +476,11 @@ function vcs_gen_verdi() {
     eval "echo \"${template_verdi}\"" > ${VCS_VERDI_SCRIPT}
     chmod +x ${VCS_VERDI_SCRIPT}
 }
+function vcs_gen_all(){
+    template_all="./compile.sh\n./elaborate.sh\n./simulate.sh\n./verdi.sh"
+    echo -e ${template_all} > ${VCS_ALL_SCRIPT}
+    chmod +x ${VCS_ALL_SCRIPT}
+}
 
 function vcs_main() {
     if [[ -n "${VIVADO_SIM_FILELIST}" ]]; then
@@ -490,6 +495,7 @@ function vcs_main() {
         vcs_gen_elaborate
         vcs_gen_simulate
         vcs_gen_verdi
+        vcs_gen_all
     else
         echo -e ${COLOR_INFO}"[info] vcs: no simulation files. stop to generate vcs"${COLOR_RESET}
     fi

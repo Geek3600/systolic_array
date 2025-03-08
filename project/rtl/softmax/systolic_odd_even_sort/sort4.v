@@ -5,15 +5,16 @@
 module sort4 (
     input clk,
     input rst,
-    input en,
+    input sort_en,
+    output  sort_finish,
     input [`OUTPUT_BUF_DATASIZE-1:0] in1,
     input [`OUTPUT_BUF_DATASIZE-1:0] in2,
     input [`OUTPUT_BUF_DATASIZE-1:0] in3,
     input [`OUTPUT_BUF_DATASIZE-1:0] in4,
-    output  [`OUTPUT_BUF_DATASIZE-1:0] small1,
-    output  [`OUTPUT_BUF_DATASIZE-1:0] small2,
-    output  [`OUTPUT_BUF_DATASIZE-1:0] large1,
-    output  [`OUTPUT_BUF_DATASIZE-1:0] large2
+    output  [`OUTPUT_BUF_DATASIZE-1:0] out_small1,
+    output  [`OUTPUT_BUF_DATASIZE-1:0] out_small2,
+    output  [`OUTPUT_BUF_DATASIZE-1:0] out_large1,
+    output  [`OUTPUT_BUF_DATASIZE-1:0] out_large2
 );
 
     reg  [2:0] cnt;
@@ -24,22 +25,24 @@ module sort4 (
 
     always @(posedge clk) begin
         if (rst) cnt <= 0;
-        else if (en && cnt < 'd6) cnt <= cnt + 1;
+        else if (sort_en && cnt < 'd6) cnt <= cnt + 1;
         else cnt <= 0;
     end
-
+    assign sort_finish = (cnt == 6) ? 1 : 0;
     always @(posedge clk) begin
         if (rst) begin
             num1 <= 0;
             num2 <= 0;
             num3 <= 0;
             num4 <= 0;
+            // sort_finish <= 0;
         end
-        else if (en && cnt == 0) begin
+        else if (sort_en && cnt == 0) begin
             num1 <= in1;
             num2 <= in2;
             num3 <= in3;
             num4 <= in4;
+            // sort_finish <= 0;
         end
         else if (cnt == 1) begin
             if (num1 > num2) begin
@@ -47,12 +50,14 @@ module sort4 (
                 num2 <= num1;
                 num3 <= num3;
                 num4 <= num4; 
+                // sort_finish <= 0;
             end
             else begin
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
         end
         else if (cnt == 2) begin
@@ -61,12 +66,14 @@ module sort4 (
                 num2 <= num2;
                 num3 <= num4;
                 num4 <= num3;
+                // sort_finish <= 0;
             end
             else begin
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
         end
         else if (cnt == 3) begin
@@ -75,12 +82,14 @@ module sort4 (
                 num2 <= num3;
                 num3 <= num2;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
             else begin
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
         end
         else if (cnt == 4) begin
@@ -89,12 +98,14 @@ module sort4 (
                 num2 <= num2;
                 num3 <= num4;
                 num4 <= num3;
+                // sort_finish <= 0;
             end
             else begin  
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
         end
         else if (cnt == 5) begin
@@ -102,13 +113,15 @@ module sort4 (
                 num1 <= num2;
                 num2 <= num1;
                 num3 <= num3;
-                num4 <= num4;   
+                num4 <= num4;
+                // sort_finish <= 0;   
             end
             else begin
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 0;
             end
         end
         else if (cnt == 6) begin
@@ -117,12 +130,14 @@ module sort4 (
                 num2 <= num3;
                 num3 <= num2;
                 num4 <= num4;
+                // sort_finish <= 1;
             end
             else begin
                 num1 <= num1;
                 num2 <= num2;
                 num3 <= num3;
                 num4 <= num4;
+                // sort_finish <= 1;
             end
         end
         else begin
@@ -130,13 +145,14 @@ module sort4 (
             num2 <= num2;
             num3 <= num3;
             num4 <= num4;
+            // sort_finish <= 0;
         end
     end
 
-    assign small1 = num1;
-    assign small2 = num2;
-    assign large1 = num3;
-    assign large2 = num4;
+    assign out_small1 = num1;
+    assign out_small2 = num2;
+    assign out_large1 = num3;
+    assign out_large2 = num4;
 
 
 endmodule
