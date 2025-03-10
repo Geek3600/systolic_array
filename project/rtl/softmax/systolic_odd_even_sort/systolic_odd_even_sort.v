@@ -5,7 +5,7 @@ module systolic_odd_even_sort (
 	input rst,
     input en,
     input [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] in,
-    output reg [`OUTPUT_BUF_DATASIZE-1:0] max_out 
+    output [`OUTPUT_BUF_DATASIZE-1:0] max_out 
 );
 
     wire even_SL;
@@ -170,6 +170,7 @@ module systolic_odd_even_sort (
     endgenerate
     
     assign max_out = out[`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:(`ARRAYWIDTH-1)*`OUTPUT_BUF_DATASIZE];
+    // assign max_out = out[`OUTPUT_BUF_DATASIZE-1:0];
 
 endmodule
 

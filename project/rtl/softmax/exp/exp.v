@@ -5,15 +5,19 @@ module exp (
     input rst,
     input is_stage2,
     input is_stage4,
-    input [`OUTPUT_BUF_DATASIZE-1:0] lnF,// 32位定点数
-    input [`OUTPUT_BUF_DATASIZE-1:0] Xi, // 32位整数
+    input [`OUTPUT_BUF_DATASIZE-1:0] lnF,  // 32位定点数
+    input [`OUTPUT_BUF_DATASIZE-1:0] Xi,   // 32位整数
+    input [`OUTPUT_BUF_DATASIZE-1:0] Xmax, // 32位整数
     output [`OUTPUT_BUF_DATASIZE-1:0] exp_out // 32位定点数
 );
     
     wire [`OUTPUT_BUF_DATASIZE-1:0] lnF_q; // 32位整数部分 
     wire [`OUTPUT_BUF_DATASIZE-1:0] Xi_q;  // 32位整数部分 
+    wire [`OUTPUT_BUF_DATASIZE-1:0] Xmax_sub_Xi;  // 32位整数部分 
+    wire [`OUTPUT_BUF_DATASIZE-1:0] Xmax_sub_Xi_q;  // 32位整数部分 
+    assign Xmax_sub_Xi = Xmax - Xi;
     register #(`OUTPUT_BUF_DATASIZE) u_register1(clk, rst, lnF, lnF_q);
-    register #(`OUTPUT_BUF_DATASIZE) u_register2(clk, rst, Xi, Xi_q);
+    register #(`OUTPUT_BUF_DATASIZE) u_register2(clk, rst, Xmax_sub_Xi, Xmax_sub_Xi_q);
 
 
     wire [`OUTPUT_BUF_DATASIZE-1:0] u;   // 32位整数部分 
@@ -22,7 +26,7 @@ module exp (
     wire [`FIXPOINT_FRAC-1:0] v_q;       // 10位小数部分
     preprocess u_preprocess(
         .lnF(lnF_q),             //32位定点数 lnF 22位整数 10位小数
-        .Xi(Xi_q),               //32位整数
+        .Xi(Xmax_sub_Xi_q),               //32位整数
         .is_stage2(is_stage2),
         .is_stage4(is_stage4),
         .u(u), // 32位整数部分 

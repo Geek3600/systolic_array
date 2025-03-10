@@ -52,8 +52,8 @@ module tb_systolic_odd_even_sort();
     //================生成波形====================
 	initial begin
 		#1000;
-		if (max_out == mem_res[0][`OUTPUT_BUF_DATASIZE-1:0]) $display("pass");
-		// $display("%h",max_out);
+		// if (max_out == mem_res[0][`OUTPUT_BUF_DATASIZE-1:0]) $display("pass");
+		$display("%d",max_out);
 		$finish;
 	end
 endmodule

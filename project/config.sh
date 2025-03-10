@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PROJECT_NAME=exp
+PROJECT_NAME=softmax
 # top module
-VIVADO_TOP_MODULES=exp
+VIVADO_TOP_MODULES=softmax
 
 ###########################################
 # for tcl flow
@@ -30,26 +30,28 @@ VIVADO_VERILOG_FILELIST=(
     # rtl/top.v
     # rtl/weight_buffer.v
     # rtl/weight_shifter_register.v
+    rtl/register.v
     rtl/config.v
-    # rtl/softmax/sum.v
-    # rtl/softmax/ln/leading_one_detector.v
-    # rtl/softmax/ln/shift.v
-    # rtl/register.v
-    # rtl/softmax/ln/constant_multipler.v
+
     # rtl/relu_pe.v
     # rtl/relu.v
-    # rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
-    # rtl/softmax/systolic_odd_even_sort/sort_pe.v
-    # rtl/softmax/systolic_odd_even_sort/sort4.v
-    # rtl/softmax/ln/constant_multipler_ln2.v 
-    # rtl/softmax/ln/leading_one_detector.v 
-    # rtl/softmax/ln/ln.v 
-    # rtl/softmax/ln/shift.v
-    rtl/register.v
+    rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
+    rtl/softmax/systolic_odd_even_sort/sort_pe.v
+    rtl/softmax/systolic_odd_even_sort/sort4.v
+    rtl/softmax/systolic_odd_even_sort/sort_controller.v
+
+    rtl/softmax/ln/constant_multipler_ln2.v 
+    rtl/softmax/ln/leading_one_detector.v 
+    rtl/softmax/ln/ln.v 
+    rtl/softmax/ln/shift.v
+
     rtl/softmax/exp/exp.v 
     rtl/softmax/exp/kb_lut.v 
     rtl/softmax/exp/preprocess.v
-    # rtl/softmax/systolic_odd_even_sort/sort_controller.v
+
+    rtl/softmax/sum_add_tree.v
+    rtl/softmax/softmax_ctrl.v 
+    rtl/softmax/softmax.v
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
@@ -61,7 +63,7 @@ VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
 VIVADO_XDC_FILELIST=
 VIVADO_SIM_FILELIST=(
-    tb/tb_exp.v
+    tb/tb_softmax.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 

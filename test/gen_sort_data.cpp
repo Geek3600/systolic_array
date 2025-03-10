@@ -24,7 +24,8 @@ void gen_test_data()
 	}
     for (int i = 0; i < ARRAYWIDTH; i++)
     {
-        in[i] = (rand() % (uint32_t)pow(2, 32)); 
+        // in[i] = (rand() % (uint32_t)pow(2, 32)); 
+        in[i] = i + 1; 
         printf("%d ", in[i]);
     }
     for (int i = 0; i < ARRAYWIDTH; i++)
@@ -37,10 +38,12 @@ void gen_test_data()
     {
         printf("%d ", in[i]);
     }
+    printf("\n");
     for (int i = 0; i < ARRAYWIDTH; i++)
     {
         fprintf(fp_res, "%08x", in[i]);
     }
+
 	
 	fclose(fp);
 	fclose(fp_res);

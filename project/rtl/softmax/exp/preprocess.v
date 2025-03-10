@@ -23,7 +23,7 @@ module preprocess ( // 1.0111
     assign Xi_ext = {Xi, {`FIXPOINT_FRAC{1'b0}}};
 
     wire [`OUTPUT_BUF_DATASIZE+`FIXPOINT_FRAC-1:0] add; 
-    assign add = Xi_ext - mux1_ext;
+    assign add = Xi_ext + mux1_ext;
 
     wire [`OUTPUT_BUF_DATASIZE+`FIXPOINT_FRAC-1:0] const_multiple;
     assign const_multiple = add + (add >> 1) + (~(add >> 4)) + 1; // x * log2e 常数乘法
