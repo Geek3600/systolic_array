@@ -1,4 +1,4 @@
-module sum #(
+module sum_add_tree #(
     parameter NUM_INPUTS = `OUTPUT_BUF_DATASIZE, // 输入数据的个数（可配置）
     parameter DATA_WIDTH = `OUTPUT_BUF_DATASIZE  // 数据的位宽（可配置）
 ) (

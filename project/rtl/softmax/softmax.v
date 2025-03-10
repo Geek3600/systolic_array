@@ -3,15 +3,53 @@
 module softmax (
 	input clk,
 	input rst,
-    input [`OUTPUT_BUF_DATASIZE-1:0] in,
-    output reg [`OUTPUT_BUF_DATASIZE-1:0] out 
+    input softmax_en,
+    input [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] Xi, // 每个元素都是32位整数
+    output reg [`ARRAYWIDTH*(`FIXPOINT_INT+`FIXPOINT_FRAC)-1:0] out  // 每个元素都是32位定点数，22位整数，10位小数
 );
+    wire en;
+    wire [`OUTPUT_BUF_DATASIZE-1:0] Xmax; 
+    systolic_odd_even_sort u_systolic_odd_even_sort(
+        .clk(clk),
+        .rst(rst),
+        .en(en),
+        .in(Xi),
+        .max_out(Xmax) 
+    );
 
-    always @(posedge clk) begin
-        if (rst) out <= 0;
-        else if (in[`OUTPUT_BUF_DATASIZE-1] == 1) out <= 0;
-        else out <= in;
-    end
+
+    wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] sum_in;
+    wire [`OUTPUT_BUF_DATASIZE-1:0] F;             
+    sum_add_tree #(
+        .NUM_INPUTS(`ARRAYWIDTH),         
+        .DATA_WIDTH(`OUTPUT_BUF_DATASIZE)  
+    ) u_sum_add_tree(
+        .inputs(sum_in),                         
+        .sum(F)                          
+    );
+
+    wire [`OUTPUT_BUF_DATASIZE-1:0] lnF;
+    ln u_ln(
+        .clk(clk),
+        .rst(rst),
+        .F(F),
+        .lnF(lnF) 
+    );
+
+    genvar i;
+    generate
+        for (i = 0; i < `ARRAYWIDTH; i = i + 1) begin: exp_array
+            exp u_exp(
+                .clk(clk),
+                .rst(rst),
+                .is_stage2(is_stage2),
+                .is_stage4(is_stage4),
+                .lnF(lnF), // 32位定点数
+                .Xi(Xi[(i+1)*(`FIXPOINT_FRAC+`FIXPOINT_INT)-1:i*(`FIXPOINT_FRAC+`FIXPOINT_INT)]),     // 32位整数
+                .exp_out(out[(i+1)*(`FIXPOINT_FRAC+`FIXPOINT_INT)-1:i*(`FIXPOINT_FRAC+`FIXPOINT_INT)]) // 32位定点数
+            );
+        end
+    endgenerate
 
 endmodule
 

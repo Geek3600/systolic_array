@@ -12,9 +12,10 @@
 `define RECEIVE_RIGHT 100 // 接收右边数据
 `define COMPARE 101     // 比较数据
 
-`define FIXPOINT_INT  10     // 定点数整数位数
-`define FIXPOINT_FRAC 22     // 定点数小数位数
+`define FIXPOINT_INT  22     // 定点数整数位数
+`define FIXPOINT_FRAC 10     // 定点数小数位数
 
-`define P 4    // 分段线性拟合段数
-
+`define P 3    // 分段线性拟合系数
+// `define SOFTMAX_EXP_FIXPOINT_INT OUTPUT_BUF_DATASIZE
+// `define SOFTMAX_EXP_FIXPOINT_FRAC 8
 

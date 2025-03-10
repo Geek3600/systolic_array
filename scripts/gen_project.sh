@@ -597,12 +597,15 @@ function iverilog_main() {
     fi
 }
 
+# $#是脚本的参数个数
 if [[ $# -ge 1 ]]; then
-    for i in "$@"; do
+    # $@是脚本的所有参数，遍历
+    for i in "$@"; do 
         echo -e ${COLOR_INFO}"[info] generator: read ${i}"${COLOR_RESET}
         SRC_DIR=$(dirname $(readlink -f ${i}))
         source ${i}
         source ./template_config.sh
+        cp ${i} ${PROJECT_DIR}/config_copy.sh        
         vivado_main
         if [[ ${VCS_ENABLE} && ${VCS_ENABLE} -ne 0 ]]; then
             vcs_main
