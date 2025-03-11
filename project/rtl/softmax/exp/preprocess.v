@@ -28,7 +28,7 @@ module preprocess ( // 1.0111
     wire [`OUTPUT_BUF_DATASIZE+`FIXPOINT_FRAC-1:0] const_multiple;
     assign const_multiple = add + (add >> 1) + (~(add >> 4)) + 1; // x * log2e 常数乘法
     assign u = const_multiple[`OUTPUT_BUF_DATASIZE+`FIXPOINT_FRAC-1:`FIXPOINT_FRAC]; // 下取整，整数部分
-    assign v = const_multiple[`FIXPOINT_FRAC-1:0];  // 小数部分
+    assign v = const_multiple[`FIXPOINT_FRAC-1:0];               // 小数部分
 
 endmodule
 
