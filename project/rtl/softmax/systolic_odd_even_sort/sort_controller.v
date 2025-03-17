@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module sort_controller (
 	input clk,
 	input rst,
@@ -71,6 +71,7 @@ module sort_controller (
         endcase
     end
 
+    // assign write_enable = (next_state == IDLE) ? 1 : 0;
     always @(posedge clk) begin
         if (rst) begin
             even_SL <= 0;
@@ -190,7 +191,7 @@ module sort_controller (
 
             odd_cmp_en   <= 0;
             even_cmp_en  <= 0;
-            write_enable <= 0;
+            write_enable <= 1;
         end
     end
  

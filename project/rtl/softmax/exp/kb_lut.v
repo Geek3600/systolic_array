@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module kb_lut (
     input [`FIXPOINT_FRAC-1:0] v,//10位
     output reg [17:0] k, // 8位整数，10位小数

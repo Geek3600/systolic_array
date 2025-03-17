@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+////`include "config.v"
 module leading_one_detector #(
     parameter IN_SIZE  =  `OUTPUT_BUF_DATASIZE,
     parameter OUT_SIZE =  `OUTPUT_BUF_DATASIZE

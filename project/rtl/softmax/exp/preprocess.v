@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module preprocess ( // 1.0111
     input  [`OUTPUT_BUF_DATASIZE-1:0] lnF, //32位定点数 lnf 22位整数 10位小数
     input  [`OUTPUT_BUF_DATASIZE-1:0] Xi, //32位整数数
@@ -14,6 +14,7 @@ module preprocess ( // 1.0111
     wire [`OUTPUT_BUF_DATASIZE-1:0] mux1;
     assign mux1 = (is_stage4) ? lnF : 0;
 
+    
     //integer extend 32 fix point -> 42 fix point
     wire [`OUTPUT_BUF_DATASIZE+`FIXPOINT_FRAC-1:0] mux1_ext;
     assign mux1_ext = {{`FIXPOINT_FRAC{1'b0}}, mux1};
