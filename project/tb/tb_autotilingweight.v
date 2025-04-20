@@ -22,6 +22,7 @@ module tb_autotilingweight();
 	reg [16*17-1:0] addrs;
 	reg [15:0] addr_valid;
 	wire [16*8-1:0] output_weight;
+	reg [147*8*64-1:0] weight [0:0];
 	
     initial begin	
 		enable = 1'b0;
@@ -29,7 +30,6 @@ module tb_autotilingweight();
 		enable = 1'b1;
     end
 
-	reg [147*8*64-1:0] weight [0:0];
 	// reg [147*25*8-1:0] activate;
 	initial begin
 		$readmemh("/home/hyyuan/systolic-array/test/conv1_kernel.dat", weight);

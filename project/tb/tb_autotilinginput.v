@@ -22,6 +22,7 @@ module tb_autotilinginput();
 	reg [16*15-1:0] addrs;
 	reg [15:0] addr_valid;
 	wire [16*8-1:0] output_activate;
+	reg [147*25*8-1:0] activate [0:0];
 	
     initial begin	
 		enable = 1'b0;
@@ -30,7 +31,6 @@ module tb_autotilinginput();
     end
 
 	// reg [147*8*64-1:0]  [0:0];
-	reg [147*25*8-1:0] activate [0:0];
 	initial begin
 		$readmemh("/home/hyyuan/systolic-array/test/im2col_input.dat", activate);
 		// $readmemh("/home/hyyuan/systolic-array/test/im2col_input.bin", activate);
