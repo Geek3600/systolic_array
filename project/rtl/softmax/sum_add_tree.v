@@ -2,6 +2,8 @@ module sum_add_tree #(
     parameter NUM_INPUTS = `OUTPUT_BUF_DATASIZE, // 输入数据的个数（可配置）
     parameter DATA_WIDTH = `OUTPUT_BUF_DATASIZE  // 数据的位宽（可配置）
 ) (
+    input clk,
+    input rst,
     input wire [NUM_INPUTS*DATA_WIDTH-1:0] inputs, // 输入数据
     output wire [DATA_WIDTH-1:0] F // 累加结果
 );
@@ -34,7 +36,7 @@ module sum_add_tree #(
         end
     endgenerate
 
-    register #(NUM_INPUTS*DATA_WIDTH) u_register2(clk, rst, stage[NUM_STAGES][DATA_WIDTH-1:0], sum);
+    register #(DATA_WIDTH) u_register2(clk, rst, stage[NUM_STAGES][DATA_WIDTH-1:0], sum);
     // 输出F
     // F >= 1, 不能小于1
     // assign sum = stage[NUM_STAGES][DATA_WIDTH-1:0];

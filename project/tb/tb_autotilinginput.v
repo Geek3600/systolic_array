@@ -28,6 +28,10 @@ module tb_autotilinginput();
 		enable = 1'b0;
         #CLOCK_PERIOD;
 		enable = 1'b1;
+		#(CLOCK_PERIOD*16);
+		enable = 1'b0;
+		#(CLOCK_PERIOD*2);
+		enable = 1'b1;
     end
 
 	// reg [147*8*64-1:0]  [0:0];
@@ -122,6 +126,6 @@ module tb_autotilinginput();
 		$fsdbDumpvars("+all");
 	end
     //================生成波形====================
-	initial #1900 $finish;
+	initial #200 $finish;
 
 endmodule

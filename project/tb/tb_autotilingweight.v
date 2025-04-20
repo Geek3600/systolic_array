@@ -28,6 +28,10 @@ module tb_autotilingweight();
 		enable = 1'b0;
         #CLOCK_PERIOD;
 		enable = 1'b1;
+		#(CLOCK_PERIOD*16);
+		enable = 1'b0;
+		#(CLOCK_PERIOD*10);
+		enable = 1'b1;
     end
 
 	// reg [147*25*8-1:0] activate;
@@ -39,7 +43,9 @@ module tb_autotilingweight();
 	end
 
 	always@(posedge clk) begin
-		count <= count + 1;
+		if (enable) count <= count + 1;
+		else count <= count;
+		
 		$display("%d: %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",  count, 
 																		output_weight[7:0]    ,
 																		output_weight[15:8]   ,
@@ -153,6 +159,6 @@ module tb_autotilingweight();
 		$fsdbDumpvars("+all");
 	end
     //================生成波形====================
-	initial #4900 $finish;
+	initial #200 $finish;
 
 endmodule

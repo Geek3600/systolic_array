@@ -48,6 +48,8 @@ module softmax (
         .NUM_INPUTS(`ARRAYWIDTH),         
         .DATA_WIDTH(`OUTPUT_BUF_DATASIZE)  
     ) u_sum_add_tree(
+        .clk(clk),
+        .rst(rst),
         .inputs(sum_in),                         
         .F(F)                          
     );

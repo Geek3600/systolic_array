@@ -2,7 +2,7 @@
 
 PROJECT_NAME=conv
 # top module
-VIVADO_TOP_MODULES=conv
+VIVADO_TOP_MODULES=accelerator
 
 ###########################################
 # for tcl flow
@@ -51,7 +51,7 @@ VIVADO_VERILOG_FILELIST=(
     rtl/softmax/sum_add_tree.v
     rtl/softmax/softmax_ctrl.v 
     rtl/softmax/softmax.v
-    
+
     rtl/autotilinginput.sv
     rtl/autotilingweight.sv
 )
@@ -60,7 +60,7 @@ VIVADO_INC_PATH_FILELIST=(
 )
 VIVADO_GLOBAL_INC_FILE_LIST=
 VIVADO_XCI_FILELIST=(
-    # dsp_macro_0.xci
+    dsp_macro_0.xci
 )
 VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
@@ -68,7 +68,7 @@ VIVADO_XDC_FILELIST=(
     xdc/clock.xdc
 )
 VIVADO_SIM_FILELIST=(
-    tb/tb_conv.v
+    tb/tb_accelerator.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 
