@@ -23,10 +23,10 @@ module tb_accelerator();
 	reg weight_buffer_out_en;
 	reg write_weight_en;
 
-	wire output_buffer_load_en;
-	wire output_buffer_out_en;
-    wire relu_en;
-	wire softmax_en;
+	reg output_buffer_load_en;
+	reg output_buffer_out_en;
+    reg relu_en;
+	reg softmax_en;
 
 	reg [`DATASIZE*`ARRAYWIDTH-1:0] in_act;
 	reg [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
@@ -62,11 +62,15 @@ module tb_accelerator();
 		$readmemh("/home/hyyuan/systolic-array/test/im2col_input.dat",activate);
 	end
 
+	reg output_debug;
 	// 输入固定，不再是权重固定
     initial begin
         weight_enable = 0;
 		act_enable = 0;
 		matmul_enable = 0;
+		output_debug = 0;
+		output_buffer_load_en = 0;
+		output_buffer_out_en = 0;
 
         #CLOCK_PERIOD; // 开始对输入数据进行分块，将其输入权重缓冲区
         weight_enable = 1;
@@ -78,6 +82,18 @@ module tb_accelerator();
 		#(CLOCK_PERIOD*16);
 		act_enable = 0; // 输入和权重数据都已到位
 		matmul_enable = 1; // 输出缓冲区开始输出，矩阵乘法开始
+
+		#(CLOCK_PERIOD*65);//64
+		output_buffer_load_en = 1;
+
+		#(CLOCK_PERIOD*76);
+		// output_debug = 1;
+		output_buffer_load_en = 0;
+		output_buffer_out_en = 1;
+
+		#(CLOCK_PERIOD*16);
+		output_buffer_out_en = 0;
+
     end
 
 	// 对权重数据自动分块的行计数
@@ -159,14 +175,14 @@ module tb_accelerator();
 	end
 
 	// 第四步，output_buffer开始接收输出
-	assign output_buffer_load_en = 0;
+	// assign output_buffer_load_en = 0;
 	
 	// 第五步，output_buffer输出结果
-	assign output_buffer_out_en = 0;
+	// assign output_buffer_out_en = 0;
 	
     // 第六步 激活
-    assign softmax_en = 0;
-    assign relu_en = 0;
+    // assign softmax_en = 0;
+    // assign relu_en = 0;
 
 	accelerator u_accelerator(
 		.clk(clk),
@@ -301,6 +317,6 @@ module tb_accelerator();
 		$fsdbDumpfile("tb_accelerator.fsdb");
 		$fsdbDumpvars("+all");
 	end
-	initial #1000 $finish;
+	initial #2000 $finish;
 
 endmodule
