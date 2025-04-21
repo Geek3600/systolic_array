@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PROJECT_NAME=conv
+PROJECT_NAME=output_acc_reg
 # top module
-VIVADO_TOP_MODULES=accelerator
+VIVADO_TOP_MODULES=output_buffer
 
 ###########################################
 # for tcl flow
@@ -20,55 +20,67 @@ VIVADO_BD_TOP_MODULES=
 
 # source files
 VIVADO_VERILOG_FILELIST=(
-    rtl/input_buffer.v
-    rtl/input_shifter_register.v
+    # rtl/accelerator.v
+    
+    # # 输入缓冲区顶层和组件
+    # rtl/input_buffer.v
+    # rtl/input_shifter_register.v
+    
+    # 输出缓冲区顶层和组件
     rtl/output_buffer.v
-    rtl/PE_row.v
-    rtl/PE.v
-    rtl/shift_regster.v
-    rtl/systolic_array.v
-    rtl/accelerator.v
-    rtl/weight_buffer.v
-    rtl/weight_shifter_register.v
+    rtl/output_shifter_register.v
+    
+    # # 脉动阵列的顶层和底层组件
+    # rtl/PE_row.v
+    # rtl/PE.v
+    # rtl/systolic_array.v
 
-    rtl/register.v
-    rtl/config.v
+    # # 权重缓冲区的顶层和组件
+    # rtl/weight_buffer.v
+    # rtl/weight_shifter_register.v
 
-    rtl/relu_pe.v
-    rtl/relu.v
+    # # 通用组件
+    # rtl/register.v
+    # rtl/config.v
 
-    rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
-    rtl/softmax/systolic_odd_even_sort/sort_pe.v
-    rtl/softmax/systolic_odd_even_sort/sort4.v
-    rtl/softmax/systolic_odd_even_sort/sort_controller.v
-    rtl/softmax/ln/constant_multipler_ln2.v 
-    rtl/softmax/ln/leading_one_detector.v 
-    rtl/softmax/ln/ln.v 
-    rtl/softmax/ln/shift.v
-    rtl/softmax/exp/exp.v 
-    rtl/softmax/exp/kb_lut.v 
-    rtl/softmax/exp/preprocess.v
-    rtl/softmax/sum_add_tree.v
-    rtl/softmax/softmax_ctrl.v 
-    rtl/softmax/softmax.v
+    # # relu激活函数单元顶层和组件
+    # rtl/relu_pe.v
+    # rtl/relu.v
 
-    rtl/autotilinginput.sv
-    rtl/autotilingweight.sv
+    # # softmax顶层和所有组件
+    # rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
+    # rtl/softmax/systolic_odd_even_sort/sort_pe.v
+    # rtl/softmax/systolic_odd_even_sort/sort4.v
+    # rtl/softmax/systolic_odd_even_sort/sort_controller.v
+    # rtl/softmax/ln/constant_multipler_ln2.v 
+    # rtl/softmax/ln/leading_one_detector.v 
+    # rtl/softmax/ln/ln.v 
+    # rtl/softmax/ln/shift.v
+    # rtl/softmax/exp/exp.v 
+    # rtl/softmax/exp/kb_lut.v 
+    # rtl/softmax/exp/preprocess.v
+    # rtl/softmax/sum_add_tree.v
+    # rtl/softmax/softmax_ctrl.v 
+    # rtl/softmax/softmax.v
+
+    # # 自动分块模块
+    # rtl/autotilinginput.sv
+    # rtl/autotilingweight.sv
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
 )
 VIVADO_GLOBAL_INC_FILE_LIST=
 VIVADO_XCI_FILELIST=(
-    dsp_macro_0.xci
+    # dsp_macro_0.xci
 )
 VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
 VIVADO_XDC_FILELIST=(
-    xdc/clock.xdc
+    # xdc/clock.xdc
 )
 VIVADO_SIM_FILELIST=(
-    tb/tb_accelerator.v
+    tb/tb_output_buffer.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 

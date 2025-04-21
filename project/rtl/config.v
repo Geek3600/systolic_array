@@ -4,9 +4,9 @@
 // 输出数据位宽
 `define OUTPUT_BUF_DATASIZE 32
 // 阵列的高
-`define ARRAYHEIGHT 16
+`define ARRAYHEIGHT 4
 // 阵列的宽
-`define ARRAYWIDTH 16
+`define ARRAYWIDTH 4
 // 等于ARRAYWIDTH的位宽 
 `define OUTPUT_INDEX $clog2(`ARRAYWIDTH) 
 // 等于与DSP的延迟周期数
