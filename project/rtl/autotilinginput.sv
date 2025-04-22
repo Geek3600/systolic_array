@@ -3,6 +3,8 @@ module AutoTilingInput(
   input         clock,
                 reset,
                 io_enable,
+                io_nextColEnable,
+                io_nextIteration,
   output [14:0] io_rdAddr_0,
                 io_rdAddr_1,
                 io_rdAddr_2,
@@ -66,8 +68,10 @@ module AutoTilingInput(
       if (io_enable & isLastRowInTile & isLastTileInCol) begin
         if (tileStartY == 15'h1)
           tileStartY <= 15'h0;
-        else
+        else if (io_nextColEnable)
           tileStartY <= tileStartY + 15'h1;
+        else if (io_nextIteration)
+          tileStartY <= 15'h0;
       end
       if (io_enable) begin
         if (isLastRowInTile)

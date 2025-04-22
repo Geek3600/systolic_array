@@ -32,6 +32,7 @@ module PE (
 		else if (write_weight_en) out_down_weight <= in_up_weight;
 		else out_down_weight <= 0;
 	end
+	
 	reg [`DATASIZE-1:0] in_left_act_1d;
 	reg [`DATASIZE-1:0] in_left_act_2d;
 	reg [`DATASIZE-1:0] in_left_act_3d;

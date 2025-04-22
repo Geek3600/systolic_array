@@ -4,8 +4,8 @@ module output_buffer (
 	input clk,
 	input rst,
 	input load_en,
-	input load_clear,
 	input out_en,
+	input load_clear,
 	input acc_enable,
 	input acc_clear,
 	input  [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] in_res,
@@ -32,22 +32,6 @@ module output_buffer (
 		else if (load_en && cnt_dsp_delay == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b1};
 		else load_ena <= load_ena;
 	end
-
-	// assign load_full = load_ena[`ARRAYWIDTH-1];
-	// always @(posedge clk) begin
-	// 	if (rst) load_ena <= 1;
-	// 	else if (load_en && ~load_full) begin
-	// 		if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b1};
-	// 		else load_ena <= load_ena;
-	// 	end
-	// 	else begin
-	// 		if (cnt == `DSP_DELAY) load_ena <= {load_ena[`ARRAYWIDTH-2:0], 1'b0};
-	// 		else load_ena <= load_ena;
-	// 	end
-	// end
-
-	// assign load_ena_d = (load_en && (cnt == `DSP_DELAY)) ? load_ena : 0;
-
 
 	genvar i;
 	generate 

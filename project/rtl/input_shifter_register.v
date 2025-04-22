@@ -6,6 +6,7 @@ module input_shifter_register #(
 	input clk,
 	input rst,
 	input load_en,
+	input delay_clear,
 	input out_en,
 	input [`DATASIZE-1:0] in,
 	output [`DATASIZE-1:0] out
@@ -29,6 +30,7 @@ module input_shifter_register #(
 			if (cnt == 0) cnt <= cnt;
 			else  cnt <= cnt - 1;
 		end
+		else if (delay_clear) cnt <= ((`DSP_DELAY-1)*DELAY_NUM <= 0) ? 0 : (`DSP_DELAY-1)*DELAY_NUM;
 		else cnt <= cnt;
 	end
 

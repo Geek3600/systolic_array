@@ -5,6 +5,7 @@ module input_buffer (
 	input rst,
 	input load_en,
 	input out_en,
+	input delay_clear,
 	input  [`ARRAYWIDTH*`DATASIZE-1:0] in_act,
 	output [`ARRAYWIDTH*`DATASIZE-1:0] out_act
 );
@@ -18,6 +19,7 @@ module input_buffer (
 				.rst(rst),
 				.load_en(load_en),
 				.out_en(out_en),
+				.delay_clear(delay_clear),
 				.in(in_act[(i+1)*`DATASIZE-1:i*`DATASIZE]),
 				.out(out_act[(i+1)*`DATASIZE-1:i*`DATASIZE])
 			);

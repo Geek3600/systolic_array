@@ -5,10 +5,14 @@ module accelerator(
 	input  rst,
     input  input_buffer_load_en,
 	input  input_buffer_out_en,
+	input  input_buffer_delay_clear,
 	input  weight_buffer_load_en,
 	input  weight_buffer_out_en,
 	input  output_buffer_load_en,
 	input  output_buffer_out_en,
+	input  output_buffer_load_clear,
+	input  output_buffer_acc_enable,
+	input  output_buffer_acc_clear,
 	input  write_weight_en,
 	input  relu_en,
 	input  softmax_en,
@@ -29,6 +33,7 @@ module accelerator(
 		.rst(rst),
 		.load_en(input_buffer_load_en),    // 载入使能
 		.out_en(input_buffer_out_en),      // 输出使能
+		.delay_clear(input_buffer_delay_clear),
 		.in_act(in_act),                   // 输入的activation数据
 		.out_act(out_act)                  // 输出的activation数据
 	);
@@ -54,6 +59,9 @@ module accelerator(
 	output_buffer u_output_buffer(
 		.clk(clk),
 		.rst(rst),
+		.load_clear(output_buffer_load_clear),
+		.acc_enable(output_buffer_acc_enable),
+		.acc_clear(output_buffer_acc_clear),
 		.load_en(output_buffer_load_en),  // 载入使能
 		.out_en(output_buffer_out_en),    // 输出使能
 		.in_res(out_sum),                 // 载入数据

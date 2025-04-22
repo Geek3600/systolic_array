@@ -3,6 +3,7 @@ module AutoTilingWeight(
   input         clock,
                 reset,
                 io_enable,
+                io_nextRowEnable,
   output [16:0] io_rdAddr_0,
                 io_rdAddr_1,
                 io_rdAddr_2,
@@ -73,12 +74,8 @@ module AutoTilingWeight(
       automatic logic isLastTileInRow;
       isLastRowInTile = rowNum == 17'hF;
       isLastTileInRow = tileStartY == 17'h9;
-      if (io_enable & isLastRowInTile & isLastTileInRow) begin
-        if (tileStartX == 17'h3)
-          tileStartX <= 17'h0;
-        else
-          tileStartX <= tileStartX + 17'h1;
-      end
+      if (io_enable & isLastRowInTile & isLastTileInRow & io_nextRowEnable)
+        tileStartX <= tileStartX == 17'h3 ? 17'h0 : tileStartX + 17'h1;
       if (io_enable & isLastRowInTile) begin
         if (isLastTileInRow)
           tileStartY <= 17'h0;
