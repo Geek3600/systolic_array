@@ -64,51 +64,52 @@ module tb_accelerator();
 		$readmemh("/home/hyyuan/systolic-array/test/im2col_input_224_224.dat",activate);
 	end
 
-	reg output_debug;
 	// 输入固定，不再是权重固定
     initial begin
         weight_enable = 0;
 		act_enable = 0;
 		matmul_enable = 0;
-		output_debug = 0;
+
 		output_buffer_load_en = 0;
 		output_buffer_out_en = 0;
 		output_buffer_load_clear = 0;
 		output_buffer_acc_enable = 0;
 		output_buffer_acc_clear  = 0;
+
 		input_buffer_delay_clear = 0;
-		tiling_input_next_iteration_en = 0;
 
 		// 是否跨行，跨列分块
 		tiling_input_nextcol_en  = 0;
 		tiling_weight_nextrow_en = 0;
+		tiling_input_next_iteration_en = 0;
 
 //===================== weight第0行第0列，input第0行第0列 1
         #CLOCK_PERIOD; 
+
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		
 		#(CLOCK_PERIOD * 8);
+
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		
 		#(CLOCK_PERIOD * 8);
+
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		
 		#(CLOCK_PERIOD * 33);       //8 * 4 + 1
+	
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		
 		#(CLOCK_PERIOD * 36); // ((16 - 1) * 4 + 16)
+
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		
+		matmul_enable = 0;     // 输出缓冲区停止输出	
 		#CLOCK_PERIOD;
+		
 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		input_buffer_delay_clear = 1;// 输入缓冲区延迟计数值清空
-		
 		#CLOCK_PERIOD;
+
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
@@ -2299,21 +2300,21 @@ module tb_accelerator();
 		// output_buffer_acc_clear = 0; // 停止清空
     end
 
-	// 对权重数据自动分块的行计数
+	// 对权重数据自动分块的行计数, 调试用
 	always @(posedge clk) begin
 		if (rst) weight_cnt <= 0;
 		else if (weight_enable == 1) weight_cnt <= weight_cnt + 1; 
         else weight_cnt <= 0;
 	end
 
-	// 对输入数据自动分块的行计数
+	// 对输入数据自动分块的行计数， 调试用
 	always @(posedge clk) begin
 		if (rst) act_cnt <= 0;
 		else if (act_enable == 1) act_cnt <= act_cnt + 1; 
         else act_cnt <= 0;
 	end
 
-	// 对输入数据自动分块的行计数
+	// 对输入数据自动分块的行计数， 调试用
 	always @(posedge clk) begin
 		if (rst) matmul_cnt <= 0;
 		else if (matmul_enable == 1) matmul_cnt <= matmul_cnt + 1; 
