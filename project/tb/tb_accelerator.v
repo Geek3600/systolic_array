@@ -91,24 +91,30 @@ module tb_accelerator();
 //===================== weight第0行第0列，input第0行第0列 1
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		
 		#(CLOCK_PERIOD * 16);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		
 		#(CLOCK_PERIOD * 16);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		
 		#(CLOCK_PERIOD * 65);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		
 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
 		matmul_enable = 0;     // 输出缓冲区停止输出
+		
 		#CLOCK_PERIOD;
 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		input_buffer_delay_clear = 1;// 输入缓冲区延迟计数值清空
+		
 		#CLOCK_PERIOD;
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
 //===================== weight第0行第1列，input第1行第0列 
