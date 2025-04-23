@@ -39,24 +39,20 @@ module tb_accelerator();
 	reg [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
 	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top;
 
-	// reg [`DATASIZE*`ARRAYWIDTH-1:0] mem [2*`ARRAYHEIGHT-1:0];
-	// reg [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] mem_res [`ARRAYHEIGHT-1:0];
-	reg [7:0] res_idx;
-
     // =========== 输入数据分块
     reg [20:0] act_cnt;
     reg act_enable;
-	reg [16*15-1:0] act_addrs;
-	reg [15:0] act_addr_valid;
-	wire [16*8-1:0] output_activate;
-	reg [147*25*8-1:0] activate [0:0];
+	reg [8*24-1:0] act_addrs;
+	reg [7:0] act_addr_valid;
+	wire [8*8-1:0] output_activate;
+	reg [147*112*112*8-1:0] activate [0:0];
 
     // =========== 权重数据分块
 	reg [20:0] weight_cnt;
     reg  weight_enable;
-	reg  [16*17-1:0] weight_addrs;
-	reg  [15:0] weight_addr_valid;
-	wire [16*8-1:0] output_weight;
+	reg  [8*17-1:0] weight_addrs;
+	reg  [7:0] weight_addr_valid;
+	wire [8*8-1:0] output_weight;
 	reg  [147*8*64-1:0] weight [0:0];
 
 	// =========== 矩阵乘法开始，同时也是输出缓冲区开始输出
@@ -64,9 +60,8 @@ module tb_accelerator();
 	reg matmul_enable;
 
 	initial begin
-		res_idx = 0;
 		$readmemh("/home/hyyuan/systolic-array/test/conv1_kernel.dat",weight);
-		$readmemh("/home/hyyuan/systolic-array/test/im2col_input.dat",activate);
+		$readmemh("/home/hyyuan/systolic-array/test/im2col_input_224_224.dat",activate);
 	end
 
 	reg output_debug;
@@ -92,18 +87,18 @@ module tb_accelerator();
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
 		
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
 		
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
 		
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //8 * 4 + 1
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
 		
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // ((16 - 1) * 4 + 16)
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
 		matmul_enable = 0;     // 输出缓冲区停止输出
@@ -120,15 +115,15 @@ module tb_accelerator();
 //===================== weight第0行第1列，input第1行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -141,18 +136,18 @@ module tb_accelerator();
 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
 
-//===================== weight第0行第2列，input第2行第0列 
+// //===================== weight第0行第2列，input第2行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -162,20 +157,20 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
-//===================== weight第0行第3列，input第3行第0列 
+// //===================== weight第0行第3列，input第3行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -185,20 +180,21 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
 	
-//===================== weight第0行第4列，input第4行第0列 
+// //===================== weight第0行第4列，input第4行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -208,20 +204,21 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
-//===================== weight第0行第5列，input第5行第0列 
+
+// //===================== weight第0行第5列，input第5行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -231,20 +228,21 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
 	
-//===================== weight第0行第6列，input第6行第0列 
+// //===================== weight第0行第6列，input第6行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -254,20 +252,21 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
-//===================== weight第0行第7列，input第7行第0列 
+
+// //===================== weight第0行第7列，input第7行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -277,20 +276,21 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
-//===================== weight第0行第8列，input第8行第0列 
+
+// //===================== weight第0行第8列，input第8行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -300,23 +300,24 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
 
 
-		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
-//===================== weight第0行第9列，input第9行第0列 
+
+// 		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
+// //===================== weight第0行第9列，input第9行第0列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -326,8 +327,218 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
+// //===================== weight第0行第10列，input第10行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+// //===================== weight第0行第11列，input第11行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+// //===================== weight第0行第12列，input第12行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+
+// //===================== weight第0行第13列，input第13行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+// //===================== weight第0行第14列，input第14行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+
+// //===================== weight第0行第15列，input第15行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+
+// //===================== weight第0行第16列，input第16行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+// //===================== weight第0行第17列，input第17行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+
+		tiling_input_nextcol_en = 1; // 提前告诉input分块模块，input矩阵要换列了
+// //===================== weight第0行第18列，input第18行第0列 
+        #CLOCK_PERIOD; 
+        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+		#(CLOCK_PERIOD * 8);
+		weight_enable = 0;        // 权重缓冲区载入结束
+		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+		#(CLOCK_PERIOD * 8);
+		act_enable = 0;           // 输入和权重都已到位
+		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+		#(CLOCK_PERIOD * 33);       //64
+		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
+		output_buffer_load_en = 0;// 输出缓冲区接收结束
+		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+		output_buffer_acc_enable = 1;// 输出缓冲区累加
+		matmul_enable = 0;     // 输出缓冲区停止输出
+		#CLOCK_PERIOD;
+		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+		#CLOCK_PERIOD;
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 //=====================跨列的处理	
 		#CLOCK_PERIOD;
 		tiling_input_nextcol_en = 0; // 关闭换列
@@ -335,19 +546,18 @@ module tb_accelerator();
 		#CLOCK_PERIOD;
 		output_buffer_acc_clear = 0; // 停止清空
 
-// 下一个分块了
-//===================== weight第0行第0列，input第0行第1列 2
+// //===================== weight第0行第0列，input第0行第1列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -357,19 +567,19 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-//===================== weight第0行第1列，input第1行第1列 
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+// //===================== weight第0行第1列，input第1行第1列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -379,20 +589,19 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第2列，input第2行第1列 
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
+// //===================== weight第0行第2列，input第2行第1列 
         #CLOCK_PERIOD; 
         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		weight_enable = 0;        // 权重缓冲区载入结束
 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
+		#(CLOCK_PERIOD * 8);
 		act_enable = 0;           // 输入和权重都已到位
 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
+		#(CLOCK_PERIOD * 33);       //64
 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+		#(CLOCK_PERIOD * 36); // （15 * 4 + 16）
 		output_buffer_load_en = 0;// 输出缓冲区接收结束
 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
 		output_buffer_acc_enable = 1;// 输出缓冲区累加
@@ -402,1615 +611,1685 @@ module tb_accelerator();
 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
 		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第3列，input第3行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第4列，input第4行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第5列，input第5行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第6列，input第6行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第7列，input第7行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
-
-//===================== weight第0行第8列，input第8行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空空
 
 
-		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
-		tiling_weight_nextrow_en = 1;
+// // 下一个分块了
+// //===================== weight第0行第0列，input第0行第1列 2
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第0行第1列，input第1行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第2列，input第2行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第3列，input第3行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第4列，input第4行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第5列，input第5行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第6列，input第6行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第7列，input第7行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第0行第8列，input第8行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
 
-//===================== weight第0行第9列，input第9行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// 		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
+// 		tiling_weight_nextrow_en = 1;
 
-		tiling_input_next_iteration_en = 0;
-		tiling_weight_nextrow_en = 0;
-		// =====================跨列的处理	
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第1行第0列，input第0行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第0行第9列，input第9行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第1列，input第1行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// 		tiling_input_next_iteration_en = 0;
+// 		tiling_weight_nextrow_en = 0;
+// 		// =====================跨列的处理	
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第1行第2列，input第2行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第0列，input第0行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第3列，input第3行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第1列，input第1行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第4列，input第4行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第2列，input第2行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第5列，input第5行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第3列，input第3行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第6列，input第6行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第4列，input第4行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第7列，input第7行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第5列，input第5行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第8列，input第8行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第6列，input第6行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第1行第7列，input第7行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+
+// //===================== weight第1行第8列，input第8行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 		
 		
-		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
-//===================== weight第1行第9列，input第9行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// 		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
+// //===================== weight第1行第9列，input第9行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//=====================跨列的处理	
-		#CLOCK_PERIOD;
-		tiling_input_nextcol_en = 0; // 关闭换列
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
+// //=====================跨列的处理	
+// 		#CLOCK_PERIOD;
+// 		tiling_input_nextcol_en = 0; // 关闭换列
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第1行第0列，input第0行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第0列，input第0行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第1行第1列，input第1行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第1列，input第1行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第2列，input第2行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第1行第2列，input第2行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第1行第3列，input第3行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第3列，input第3行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第1行第4列，input第4行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第4列，input第4行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第1行第5列，input第5行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第1行第5列，input第5行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第1行第6列，input第6行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第1行第6列，input第6行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第1行第7列，input第7行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第7列，input第7行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 	
-//===================== weight第1行第8列，input第8行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第8列，input第8行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
 
-		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
-		tiling_weight_nextrow_en = 1;
+// 		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
+// 		tiling_weight_nextrow_en = 1;
 
-//===================== weight第1行第9列，input第9行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第1行第9列，input第9行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-		tiling_input_next_iteration_en = 0;
-		tiling_weight_nextrow_en = 0;
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
+// 		tiling_input_next_iteration_en = 0;
+// 		tiling_weight_nextrow_en = 0;
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第2行第0列，input第0行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第0列，input第0行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第1列，input第1行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第1列，input第1行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第2列，input第2行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第2列，input第2行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第3列，input第3行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第3列，input第3行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第4列，input第4行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第4列，input第4行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第5列，input第5行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第5列，input第5行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第6列，input第6行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第6列，input第6行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第7列，input第7行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第7列，input第7行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第8列，input第8行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第8列，input第8行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 		
 		
-		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
-//===================== weight第2行第9列，input第9行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// 		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
+// //===================== weight第2行第9列，input第9行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//=====================跨列的处理	
-		#CLOCK_PERIOD;
-		tiling_input_nextcol_en = 0; // 关闭换列
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
+// //=====================跨列的处理	
+// 		#CLOCK_PERIOD;
+// 		tiling_input_nextcol_en = 0; // 关闭换列
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第2行第0列，input第0行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第0列，input第0行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第2行第1列，input第1行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第1列，input第1行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第2列，input第2行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第2行第2列，input第2行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第2行第3列，input第3行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第3列，input第3行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第2行第4列，input第4行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第4列，input第4行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第2行第5列，input第5行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第2行第5列，input第5行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第2行第6列，input第6行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第2行第6列，input第6行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第2行第7列，input第7行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第7列，input第7行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 	
-//===================== weight第2行第8列，input第8行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第8列，input第8行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
 
-		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
-		tiling_weight_nextrow_en = 1;
+// 		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
+// 		tiling_weight_nextrow_en = 1;
 
-//===================== weight第2行第9列，input第9行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第2行第9列，input第9行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-		tiling_input_next_iteration_en = 0;
-		tiling_weight_nextrow_en = 0;
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
+// 		tiling_input_next_iteration_en = 0;
+// 		tiling_weight_nextrow_en = 0;
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第3行第0列，input第0行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第0列，input第0行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第1列，input第1行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第1列，input第1行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第2列，input第2行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第2列，input第2行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第3列，input第3行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第3列，input第3行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第4列，input第4行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第4列，input第4行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第5列，input第5行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第5列，input第5行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第6列，input第6行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第6列，input第6行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第7列，input第7行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第7列，input第7行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第8列，input第8行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第8列，input第8行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 		
 
-		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
-//===================== weight第3行第9列，input第9行第0列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// 		tiling_input_nextcol_en = 1; // 提前告诉分块模块，input矩阵要换列了
+// //===================== weight第3行第9列，input第9行第0列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== 跨列的处理	
-		#CLOCK_PERIOD;
-		tiling_input_nextcol_en = 0; // 关闭换列
-		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
-		#CLOCK_PERIOD;
-		output_buffer_acc_clear = 0; // 停止清空
+// //===================== 跨列的处理	
+// 		#CLOCK_PERIOD;
+// 		tiling_input_nextcol_en = 0; // 关闭换列
+// 		output_buffer_acc_clear = 1; // 清空累加寄存器，因为要计算新的分块
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_clear = 0; // 停止清空
 
-//===================== weight第3行第0列，input第0行第1列 
-		#CLOCK_PERIOD; // 开始对输入数据进行分块，将其输入权重缓冲区
-        weight_enable = 1;
-		#(CLOCK_PERIOD*16);
-		weight_enable = 0; // 权重缓冲区载入结束
-		act_enable = 1;    // 开始对权重数据进行分块，将其载入输入缓冲区，同时将输入数据载入脉动阵列
-		#(CLOCK_PERIOD*16);
-		act_enable = 0; // 输入和权重数据都已到位
-		matmul_enable = 1; // 输出缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD*65);//64
-		output_buffer_load_en = 1;
-		#(CLOCK_PERIOD*76);
-		output_buffer_load_en = 0;
-		output_buffer_load_clear = 1;
-		output_buffer_acc_enable = 1;
-		#CLOCK_PERIOD;
-		output_buffer_load_clear = 0;
-		output_buffer_acc_enable = 0;
-		matmul_enable = 0;
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第0列，input第0行第1列 
+// 		#CLOCK_PERIOD; // 开始对输入数据进行分块，将其输入权重缓冲区
+//         weight_enable = 1;
+// 		#(CLOCK_PERIOD*16);
+// 		weight_enable = 0; // 权重缓冲区载入结束
+// 		act_enable = 1;    // 开始对权重数据进行分块，将其载入输入缓冲区，同时将输入数据载入脉动阵列
+// 		#(CLOCK_PERIOD*16);
+// 		act_enable = 0; // 输入和权重数据都已到位
+// 		matmul_enable = 1; // 输出缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD*65);//64
+// 		output_buffer_load_en = 1;
+// 		#(CLOCK_PERIOD*76);
+// 		output_buffer_load_en = 0;
+// 		output_buffer_load_clear = 1;
+// 		output_buffer_acc_enable = 1;
+// 		#CLOCK_PERIOD;
+// 		output_buffer_load_clear = 0;
+// 		output_buffer_acc_enable = 0;
+// 		matmul_enable = 0;
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第3行第1列，input第1行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第1列，input第1行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第2列，input第2行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第3行第2列，input第2行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第3行第3列，input第3行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第3列，input第3行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第3行第4列，input第4行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第4列，input第4行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
-//===================== weight第3行第5列，input第5行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
+// //===================== weight第3行第5列，input第5行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空
 
-//===================== weight第3行第6列，input第6行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
+// //===================== weight第3行第6列，input第6行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空		
 
-//===================== weight第3行第7列，input第7行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第7列，input第7行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 	
-//===================== weight第3行第8列，input第8行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第8列，input第8行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
 
-		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
-		tiling_weight_nextrow_en = 1;
+// 		tiling_input_next_iteration_en = 1; // 输入矩阵的列需要从头开始了
+// 		tiling_weight_nextrow_en = 1;
 
-//===================== weight第3行第9列，input第9行第1列 
-        #CLOCK_PERIOD; 
-        weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
-		#(CLOCK_PERIOD * 16);
-		weight_enable = 0;        // 权重缓冲区载入结束
-		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
-		#(CLOCK_PERIOD * 16);
-		act_enable = 0;           // 输入和权重都已到位
-		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
-		#(CLOCK_PERIOD * 65);       //64
-		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
-		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
-		output_buffer_load_en = 0;// 输出缓冲区接收结束
-		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
-		output_buffer_acc_enable = 1;// 输出缓冲区累加
-		matmul_enable = 0;     // 输出缓冲区停止输出
-		#CLOCK_PERIOD;
-		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
-		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
-		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
-		#CLOCK_PERIOD;
-		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
+// //===================== weight第3行第9列，input第9行第1列 
+//         #CLOCK_PERIOD; 
+//         weight_enable = 1;        // 对输入数据进行分块，载入权重缓冲区
+// 		#(CLOCK_PERIOD * 16);
+// 		weight_enable = 0;        // 权重缓冲区载入结束
+// 		act_enable = 1;           // 对权重数据进行分块，载入输入缓冲区，同时将输入数据载入脉动阵列	
+// 		#(CLOCK_PERIOD * 16);
+// 		act_enable = 0;           // 输入和权重都已到位
+// 		matmul_enable = 1;  	  // 输入缓冲区开始输出，矩阵乘法开始
+// 		#(CLOCK_PERIOD * 65);       //64
+// 		output_buffer_load_en = 1;// 输出缓冲区开始接收输出
+// 		#(CLOCK_PERIOD * 76); // （15 * 4 + 16）
+// 		output_buffer_load_en = 0;// 输出缓冲区接收结束
+// 		output_buffer_load_clear = 1;// 输出缓冲区延迟计数值清空
+// 		output_buffer_acc_enable = 1;// 输出缓冲区累加
+// 		matmul_enable = 0;     // 输出缓冲区停止输出
+// 		#CLOCK_PERIOD;
+// 		output_buffer_acc_enable = 0;// 输出缓冲区停止累加
+// 		output_buffer_load_clear = 0;// 输出缓冲区延迟计数值停止清空
+// 		input_buffer_delay_clear = 1;// 输入缓冲区的延迟计数进行清空
+// 		#CLOCK_PERIOD;
+// 		input_buffer_delay_clear = 0;// 输入缓冲区的延迟计数停止清空	
 
 // 		tiling_input_next_iteration_en = 0;
 // 		tiling_weight_nextrow_en = 0;
@@ -2163,22 +2442,14 @@ module tb_accelerator();
 		.io_enable(weight_enable),
 		.io_nextColEnable(tiling_input_nextcol_en),
 		.io_nextIteration(tiling_input_next_iteration_en),
-		.io_rdAddr_0( act_addrs[14:0]    ),
-		.io_rdAddr_1( act_addrs[29:15]   ),
-		.io_rdAddr_2( act_addrs[44:30]   ),
-		.io_rdAddr_3( act_addrs[59:45]   ),
-		.io_rdAddr_4( act_addrs[74:60]   ),
-		.io_rdAddr_5( act_addrs[89:75]   ),
-		.io_rdAddr_6( act_addrs[104:90]  ),
-		.io_rdAddr_7( act_addrs[119:105] ),
-		.io_rdAddr_8( act_addrs[134:120] ),
-		.io_rdAddr_9( act_addrs[149:135] ),	
-		.io_rdAddr_10(act_addrs[164:150]),
-		.io_rdAddr_11(act_addrs[179:165]),
-		.io_rdAddr_12(act_addrs[194:180]),
-		.io_rdAddr_13(act_addrs[209:195]),
-		.io_rdAddr_14(act_addrs[224:210]),
-		.io_rdAddr_15(act_addrs[239:225]),
+		.io_rdAddr_0( act_addrs[23:0]    ),
+		.io_rdAddr_1( act_addrs[47:24]   ),
+		.io_rdAddr_2( act_addrs[71:48]   ),
+		.io_rdAddr_3( act_addrs[95:72]   ),
+		.io_rdAddr_4( act_addrs[119:96]   ),
+		.io_rdAddr_5( act_addrs[143:120]   ),
+		.io_rdAddr_6( act_addrs[167:144]  ),
+		.io_rdAddr_7( act_addrs[191:168] ),
 		.io_addrValid_0( act_addr_valid[0]),
 		.io_addrValid_1( act_addr_valid[1]),
 		.io_addrValid_2( act_addr_valid[2]),
@@ -2186,32 +2457,17 @@ module tb_accelerator();
 		.io_addrValid_4( act_addr_valid[4]),
 		.io_addrValid_5( act_addr_valid[5]),
 		.io_addrValid_6( act_addr_valid[6]),
-		.io_addrValid_7( act_addr_valid[7]),
-		.io_addrValid_8( act_addr_valid[8]),
-		.io_addrValid_9( act_addr_valid[9]),
-		.io_addrValid_10(act_addr_valid[10]),
-		.io_addrValid_11(act_addr_valid[11]),
-		.io_addrValid_12(act_addr_valid[12]),
-		.io_addrValid_13(act_addr_valid[13]),
-		.io_addrValid_14(act_addr_valid[14]),
-		.io_addrValid_15(act_addr_valid[15])
+		.io_addrValid_7( act_addr_valid[7])
 	);
-	assign output_activate[7:0]     = (act_addr_valid[0])  ? activate[0][(act_addrs[14:0]   )*8 +: 8]: 8'b0;
-	assign output_activate[15:8]    = (act_addr_valid[1])  ? activate[0][(act_addrs[29:15]  )*8 +: 8]: 8'b0;
-	assign output_activate[23:16]   = (act_addr_valid[2])  ? activate[0][(act_addrs[44:30]  )*8 +: 8]: 8'b0;
-	assign output_activate[31:24]   = (act_addr_valid[3])  ? activate[0][(act_addrs[59:45]  )*8 +: 8]: 8'b0;
-	assign output_activate[39:32]   = (act_addr_valid[4])  ? activate[0][(act_addrs[74:60]  )*8 +: 8]: 8'b0;
-	assign output_activate[47:40]   = (act_addr_valid[5])  ? activate[0][(act_addrs[89:75]  )*8 +: 8]: 8'b0;
-	assign output_activate[55:48]   = (act_addr_valid[6])  ? activate[0][(act_addrs[104:90] )*8 +: 8]: 8'b0;
-	assign output_activate[63:56]   = (act_addr_valid[7])  ? activate[0][(act_addrs[119:105])*8 +: 8]: 8'b0;
-	assign output_activate[71:64]   = (act_addr_valid[8])  ? activate[0][(act_addrs[134:120])*8 +: 8]: 8'b0;
-	assign output_activate[79:72]   = (act_addr_valid[9])  ? activate[0][(act_addrs[149:135])*8 +: 8]: 8'b0;
-	assign output_activate[87:80]   = (act_addr_valid[10]) ? activate[0][(act_addrs[164:150])*8 +: 8]: 8'b0;
-	assign output_activate[95:88]   = (act_addr_valid[11]) ? activate[0][(act_addrs[179:165])*8 +: 8]: 8'b0;
-	assign output_activate[103:96]  = (act_addr_valid[12]) ? activate[0][(act_addrs[194:180])*8 +: 8]: 8'b0;
-	assign output_activate[111:104] = (act_addr_valid[13]) ? activate[0][(act_addrs[209:195])*8 +: 8]: 8'b0;
-	assign output_activate[119:112] = (act_addr_valid[14]) ? activate[0][(act_addrs[224:210])*8 +: 8]: 8'b0;
-	assign output_activate[127:120] = (act_addr_valid[15]) ? activate[0][(act_addrs[239:225])*8 +: 8]: 8'b0;
+	assign output_activate[7:0]     = (act_addr_valid[0])  ? activate[0][(act_addrs[23:0]   )*8 +: 8]: 8'b0;
+	assign output_activate[15:8]    = (act_addr_valid[1])  ? activate[0][(act_addrs[47:24]  )*8 +: 8]: 8'b0;
+	assign output_activate[23:16]   = (act_addr_valid[2])  ? activate[0][(act_addrs[71:48]  )*8 +: 8]: 8'b0;
+	assign output_activate[31:24]   = (act_addr_valid[3])  ? activate[0][(act_addrs[95:72]  )*8 +: 8]: 8'b0;
+	assign output_activate[39:32]   = (act_addr_valid[4])  ? activate[0][(act_addrs[119:96] )*8 +: 8]: 8'b0;
+	assign output_activate[47:40]   = (act_addr_valid[5])  ? activate[0][(act_addrs[143:120])*8 +: 8]: 8'b0;
+	assign output_activate[55:48]   = (act_addr_valid[6])  ? activate[0][(act_addrs[167:144])*8 +: 8]: 8'b0;
+	assign output_activate[63:56]   = (act_addr_valid[7])  ? activate[0][(act_addrs[191:168])*8 +: 8]: 8'b0;
+
 
 
     AutoTilingWeight u_autotilingweight(
@@ -2227,14 +2483,6 @@ module tb_accelerator();
 		.io_rdAddr_5( weight_addrs[101:85]),
 		.io_rdAddr_6( weight_addrs[118:102]),
 		.io_rdAddr_7( weight_addrs[135:119]),
-		.io_rdAddr_8( weight_addrs[152:136]),
-		.io_rdAddr_9( weight_addrs[169:153]),
-		.io_rdAddr_10(weight_addrs[186:170]),
-		.io_rdAddr_11(weight_addrs[203:187]),
-		.io_rdAddr_12(weight_addrs[220:204]),
-		.io_rdAddr_13(weight_addrs[237:221]),
-		.io_rdAddr_14(weight_addrs[254:238]),
-		.io_rdAddr_15(weight_addrs[271:255]),
 		.io_addrValid_0( weight_addr_valid[0]),
 		.io_addrValid_1( weight_addr_valid[1]),
 		.io_addrValid_2( weight_addr_valid[2]),
@@ -2242,15 +2490,7 @@ module tb_accelerator();
 		.io_addrValid_4( weight_addr_valid[4]),
 		.io_addrValid_5( weight_addr_valid[5]),
 		.io_addrValid_6( weight_addr_valid[6]),
-		.io_addrValid_7( weight_addr_valid[7]),
-		.io_addrValid_8( weight_addr_valid[8]),
-		.io_addrValid_9( weight_addr_valid[9]),
-		.io_addrValid_10(weight_addr_valid[10]),
-		.io_addrValid_11(weight_addr_valid[11]),
-		.io_addrValid_12(weight_addr_valid[12]),
-		.io_addrValid_13(weight_addr_valid[13]),
-		.io_addrValid_14(weight_addr_valid[14]),
-		.io_addrValid_15(weight_addr_valid[15])
+		.io_addrValid_7( weight_addr_valid[7])
 	);
 	assign output_weight[7:0]     = (weight_addr_valid[0])  ? weight[0][(weight_addrs[16:0]   )*8 +: 8]: 8'b0;
 	assign output_weight[15:8]    = (weight_addr_valid[1])  ? weight[0][(weight_addrs[33:17]  )*8 +: 8]: 8'b0;
@@ -2260,19 +2500,12 @@ module tb_accelerator();
 	assign output_weight[47:40]   = (weight_addr_valid[5])  ? weight[0][(weight_addrs[101:85] )*8 +: 8]: 8'b0;
 	assign output_weight[55:48]   = (weight_addr_valid[6])  ? weight[0][(weight_addrs[118:102])*8 +: 8]: 8'b0;
 	assign output_weight[63:56]   = (weight_addr_valid[7])  ? weight[0][(weight_addrs[135:119])*8 +: 8]: 8'b0;
-	assign output_weight[71:64]   = (weight_addr_valid[8])  ? weight[0][(weight_addrs[152:136])*8 +: 8]: 8'b0;
-	assign output_weight[79:72]   = (weight_addr_valid[9])  ? weight[0][(weight_addrs[169:153])*8 +: 8]: 8'b0;
-	assign output_weight[87:80]   = (weight_addr_valid[10]) ? weight[0][(weight_addrs[186:170])*8 +: 8]: 8'b0;
-	assign output_weight[95:88]   = (weight_addr_valid[11]) ? weight[0][(weight_addrs[203:187])*8 +: 8]: 8'b0;
-	assign output_weight[103:96]  = (weight_addr_valid[12]) ? weight[0][(weight_addrs[220:204])*8 +: 8]: 8'b0;
-	assign output_weight[111:104] = (weight_addr_valid[13]) ? weight[0][(weight_addrs[237:221])*8 +: 8]: 8'b0;
-	assign output_weight[119:112] = (weight_addr_valid[14]) ? weight[0][(weight_addrs[254:238])*8 +: 8]: 8'b0;
-	assign output_weight[127:120] = (weight_addr_valid[15]) ? weight[0][(weight_addrs[271:255])*8 +: 8]: 8'b0;
+
 
 	initial begin
 		$fsdbDumpfile("tb_accelerator.fsdb");
 		$fsdbDumpvars("+all");
 	end
-	initial #160000 $finish;
+	initial #20000 $finish;
 
 endmodule

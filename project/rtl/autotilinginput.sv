@@ -5,7 +5,7 @@ module AutoTilingInput(
                 io_enable,
                 io_nextColEnable,
                 io_nextIteration,
-  output [14:0] io_rdAddr_0,
+  output [23:0] io_rdAddr_0,
                 io_rdAddr_1,
                 io_rdAddr_2,
                 io_rdAddr_3,
@@ -13,14 +13,6 @@ module AutoTilingInput(
                 io_rdAddr_5,
                 io_rdAddr_6,
                 io_rdAddr_7,
-                io_rdAddr_8,
-                io_rdAddr_9,
-                io_rdAddr_10,
-                io_rdAddr_11,
-                io_rdAddr_12,
-                io_rdAddr_13,
-                io_rdAddr_14,
-                io_rdAddr_15,
   output        io_addrValid_0,
                 io_addrValid_1,
                 io_addrValid_2,
@@ -28,96 +20,73 @@ module AutoTilingInput(
                 io_addrValid_4,
                 io_addrValid_5,
                 io_addrValid_6,
-                io_addrValid_7,
-                io_addrValid_8,
-                io_addrValid_9,
-                io_addrValid_10,
-                io_addrValid_11,
-                io_addrValid_12,
-                io_addrValid_13,
-                io_addrValid_14,
-                io_addrValid_15
+                io_addrValid_7
 );
 
-  reg  [14:0] tileStartX;
-  reg  [14:0] tileStartY;
-  reg  [14:0] rowNum;
-  wire [19:0] _GEN = {1'h0, tileStartY, 4'h0};
-  wire [14:0] _GEN_0 = {tileStartX[10:0] * 11'h19, 4'h0};
-  wire [14:0] _GEN_1 = {tileStartY[10:0], 4'h0};
-  wire [14:0] _io_rdAddr_15_T_5 = rowNum * 15'h19;
-  wire [19:0] _GEN_2 = {1'h0, tileStartX, 4'h0};
-  wire [19:0] _GEN_3 = {5'h0, rowNum};
+  reg  [23:0] tileStartX;
+  reg  [23:0] tileStartY;
+  reg  [23:0] rowNum;
+  wire [27:0] _GEN = {1'h0, tileStartY, 3'h0};
+  wire [23:0] _GEN_0 = {tileStartX[20:0] * 21'h3100, 3'h0};
+  wire [23:0] _GEN_1 = {tileStartY[20:0], 3'h0};
+  wire [23:0] _io_rdAddr_7_T_5 = rowNum * 24'h3100;
+  wire [27:0] _GEN_2 = {1'h0, tileStartX, 3'h0};
+  wire [27:0] _GEN_3 = {4'h0, rowNum};
   always @(posedge clock) begin
     if (reset) begin
-      tileStartX <= 15'h0;
-      tileStartY <= 15'h0;
-      rowNum <= 15'h0;
+      tileStartX <= 24'h0;
+      tileStartY <= 24'h0;
+      rowNum <= 24'h0;
     end
     else begin
       automatic logic isLastRowInTile;
       automatic logic isLastTileInCol;
-      isLastRowInTile = rowNum == 15'hF;
-      isLastTileInCol = tileStartX == 15'h9;
+      isLastRowInTile = rowNum == 24'h7;
+      isLastTileInCol = tileStartX == 24'h12;
       if (io_enable & isLastRowInTile) begin
         if (isLastTileInCol)
-          tileStartX <= 15'h0;
+          tileStartX <= 24'h0;
         else
-          tileStartX <= tileStartX + 15'h1;
+          tileStartX <= tileStartX + 24'h1;
       end
       if (io_enable & isLastRowInTile & isLastTileInCol) begin
-        if (tileStartY == 15'h1)
-          tileStartY <= 15'h0;
+        if (tileStartY == 24'h61F)
+          tileStartY <= 24'h0;
         else if (io_nextColEnable)
-          tileStartY <= tileStartY + 15'h1;
+          tileStartY <= tileStartY + 24'h1;
         else if (io_nextIteration)
-          tileStartY <= 15'h0;
+          tileStartY <= 24'h0;
       end
       if (io_enable) begin
         if (isLastRowInTile)
-          rowNum <= 15'h0;
+          rowNum <= 24'h0;
         else
-          rowNum <= rowNum + 15'h1;
+          rowNum <= rowNum + 24'h1;
       end
     end
   end // always @(posedge)
-  assign io_rdAddr_0 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 : 15'h0;
-  assign io_rdAddr_1 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h1 : 15'h0;
-  assign io_rdAddr_2 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h2 : 15'h0;
-  assign io_rdAddr_3 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h3 : 15'h0;
-  assign io_rdAddr_4 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h4 : 15'h0;
-  assign io_rdAddr_5 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h5 : 15'h0;
-  assign io_rdAddr_6 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h6 : 15'h0;
-  assign io_rdAddr_7 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h7 : 15'h0;
-  assign io_rdAddr_8 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h8 : 15'h0;
-  assign io_rdAddr_9 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'h9 : 15'h0;
-  assign io_rdAddr_10 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hA : 15'h0;
-  assign io_rdAddr_11 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hB : 15'h0;
-  assign io_rdAddr_12 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hC : 15'h0;
-  assign io_rdAddr_13 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hD : 15'h0;
-  assign io_rdAddr_14 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hE : 15'h0;
-  assign io_rdAddr_15 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_15_T_5 + 15'hF : 15'h0;
-  assign io_addrValid_0 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN > 20'h18);
-  assign io_addrValid_1 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h1 > 20'h18);
-  assign io_addrValid_2 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h2 > 20'h18);
-  assign io_addrValid_3 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h3 > 20'h18);
-  assign io_addrValid_4 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h4 > 20'h18);
-  assign io_addrValid_5 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h5 > 20'h18);
-  assign io_addrValid_6 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h6 > 20'h18);
-  assign io_addrValid_7 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h7 > 20'h18);
-  assign io_addrValid_8 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h8 > 20'h18);
-  assign io_addrValid_9 = io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'h9 > 20'h18);
-  assign io_addrValid_10 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hA > 20'h18);
-  assign io_addrValid_11 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hB > 20'h18);
-  assign io_addrValid_12 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hC > 20'h18);
-  assign io_addrValid_13 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hD > 20'h18);
-  assign io_addrValid_14 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hE > 20'h18);
-  assign io_addrValid_15 =
-    io_enable & ~(_GEN_2 + _GEN_3 > 20'h92 | _GEN + 20'hF > 20'h18);
+  assign io_rdAddr_0 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 : 24'h0;
+  assign io_rdAddr_1 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h1 : 24'h0;
+  assign io_rdAddr_2 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h2 : 24'h0;
+  assign io_rdAddr_3 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h3 : 24'h0;
+  assign io_rdAddr_4 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h4 : 24'h0;
+  assign io_rdAddr_5 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h5 : 24'h0;
+  assign io_rdAddr_6 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h6 : 24'h0;
+  assign io_rdAddr_7 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 24'h7 : 24'h0;
+  assign io_addrValid_0 = io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN > 28'h30FF);
+  assign io_addrValid_1 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h1 > 28'h30FF);
+  assign io_addrValid_2 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h2 > 28'h30FF);
+  assign io_addrValid_3 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h3 > 28'h30FF);
+  assign io_addrValid_4 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h4 > 28'h30FF);
+  assign io_addrValid_5 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h5 > 28'h30FF);
+  assign io_addrValid_6 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h6 > 28'h30FF);
+  assign io_addrValid_7 =
+    io_enable & ~(_GEN_2 + _GEN_3 > 28'h92 | _GEN + 28'h7 > 28'h30FF);
 endmodule
 
