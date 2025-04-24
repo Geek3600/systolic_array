@@ -25,7 +25,7 @@ module accelerator(
 	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_sum;
 	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_res;
 	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_relu;
-	wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_softmax;
+	// wire [`ARRAYWIDTH*`OUTPUT_BUF_DATASIZE-1:0] out_softmax;
 
 
 	input_buffer u_input_buffer(
@@ -76,15 +76,16 @@ module accelerator(
 		.out(out_relu)              // 每个元素都是32位整数
 	);
 
-    softmax u_softmax(
-	    .clk(clk),
-	    .rst(rst),
-        .softmax_en(softmax_en),   // softmax使能信号
-        .Xi(out_res),              // 每个元素都是32位整数
-        .out(out_softmax)          // 每个元素都是32位定点数，22位整数，10位小数
-    );
+    // softmax u_softmax(
+	//     .clk(clk),
+	//     .rst(rst),
+    //     .softmax_en(softmax_en),   // softmax使能信号
+    //     .Xi(out_res),              // 每个元素都是32位整数
+    //     .out(out_softmax)          // 每个元素都是32位定点数，22位整数，10位小数
+    // );
 
-	assign out_top = (softmax_en) ? out_softmax :
-					 (relu_en)    ? out_softmax : out_res;
+	// assign out_top = (softmax_en) ? out_softmax :
+	// 				 (relu_en)    ? out_softmax : out_res;
+	assign out_top = out_relu;
 
 endmodule

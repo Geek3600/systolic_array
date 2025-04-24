@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_NAME=conv
+PROJECT_NAME=convctrl
 # top module
 VIVADO_TOP_MODULES=accelerator
 
@@ -9,11 +9,12 @@ VIVADO_TOP_MODULES=accelerator
 ###########################################
 # device definition
 VIVADO_DEVICE=xcvu9p
+# VIVADO_DEVICE=xc7z020
+# VIVADO_PACKAGE=clg400
 VIVADO_PACKAGE=-flga2104
 VIVADO_SPEED=-2-i
+# VIVADO_SPEED=-1
 VIVADO_PART=\$device\$package\$speed
-
-
 
 # block deisgn module
 VIVADO_BD_TOP_MODULES=
@@ -48,24 +49,28 @@ VIVADO_VERILOG_FILELIST=(
     rtl/relu.v
 
     # softmax顶层和所有组件
-    rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
-    rtl/softmax/systolic_odd_even_sort/sort_pe.v
-    rtl/softmax/systolic_odd_even_sort/sort4.v
-    rtl/softmax/systolic_odd_even_sort/sort_controller.v
-    rtl/softmax/ln/constant_multipler_ln2.v 
-    rtl/softmax/ln/leading_one_detector.v 
-    rtl/softmax/ln/ln.v 
-    rtl/softmax/ln/shift.v
-    rtl/softmax/exp/exp.v 
-    rtl/softmax/exp/kb_lut.v 
-    rtl/softmax/exp/preprocess.v
-    rtl/softmax/sum_add_tree.v
-    rtl/softmax/softmax_ctrl.v 
-    rtl/softmax/softmax.v
+    # rtl/softmax/systolic_odd_even_sort/systolic_odd_even_sort.v
+    # rtl/softmax/systolic_odd_even_sort/sort_pe.v
+    # rtl/softmax/systolic_odd_even_sort/sort4.v
+    # rtl/softmax/systolic_odd_even_sort/sort_controller.v
+    # rtl/softmax/ln/constant_multipler_ln2.v 
+    # rtl/softmax/ln/leading_one_detector.v 
+    # rtl/softmax/ln/ln.v 
+    # rtl/softmax/ln/shift.v
+    # rtl/softmax/exp/exp.v 
+    # rtl/softmax/exp/kb_lut.v 
+    # rtl/softmax/exp/preprocess.v
+    # rtl/softmax/sum_add_tree.v
+    # rtl/softmax/softmax_ctrl.v 
+    # rtl/softmax/softmax.v
 
     # 自动分块模块
     rtl/autotilinginput.sv
     rtl/autotilingweight.sv
+
+    # 卷积控制器
+    rtl/convctrl.sv
+
 )
 VIVADO_INC_PATH_FILELIST=(
     rtl
