@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module shift ( // 移位，然后直接-1，再进行拼接
     input clk,
     input rst,

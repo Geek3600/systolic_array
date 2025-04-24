@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_NAME=convctrl
+PROJECT_NAME=board_level
 # top module
 VIVADO_TOP_MODULES=accelerator
 
@@ -8,12 +8,12 @@ VIVADO_TOP_MODULES=accelerator
 # for tcl flow
 ###########################################
 # device definition
-VIVADO_DEVICE=xcvu9p
-# VIVADO_DEVICE=xc7z020
-# VIVADO_PACKAGE=clg400
-VIVADO_PACKAGE=-flga2104
-VIVADO_SPEED=-2-i
-# VIVADO_SPEED=-1
+# VIVADO_DEVICE=xcvu9p
+VIVADO_DEVICE=xc7z020
+VIVADO_PACKAGE=clg400
+# VIVADO_PACKAGE=-flga2104
+# VIVADO_SPEED=-2-i
+VIVADO_SPEED=-1
 VIVADO_PART=\$device\$package\$speed
 
 # block deisgn module
@@ -78,6 +78,7 @@ VIVADO_INC_PATH_FILELIST=(
 VIVADO_GLOBAL_INC_FILE_LIST=
 VIVADO_XCI_FILELIST=(
     dsp_macro_0.xci
+    # bram_input2828.xci
 )
 VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=

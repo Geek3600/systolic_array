@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module tb_systolic_odd_even_sort();
 	parameter CLOCK_PERIOD = 10;
 	reg clk;

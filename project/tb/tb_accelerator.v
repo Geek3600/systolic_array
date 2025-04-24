@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module tb_accelerator();
 	parameter CLOCK_PERIOD = 10;
 	reg clk;
@@ -206,48 +206,48 @@ module tb_accelerator();
 	assign output_weight[63:56]   = (weight_addr_valid[7])  ? weight[0][(weight_addrs[135:119])*8 +: 8]: 8'b0;
 
 
-	// reg ena;
-    // reg [11:0] input_addr;
-    // reg [10:0] weight_addr;
-    // wire [63:0] input_douta;
-    // wire [63:0] weight_douta;
+	 reg ena;
+     reg [11:0] input_addr;
+      reg [10:0] weight_addr;
+     wire [63:0] input_douta;
+      wire [63:0] weight_douta;
 
-    // initial begin
-    //     ena = 0;
-    //     #CLOCK_PERIOD;
-    //     ena = 1;
-    //     #CLOCK_PERIOD;
-    // end
+     initial begin
+         ena = 0;
+         #CLOCK_PERIOD;
+         ena = 1;
+         #CLOCK_PERIOD;
+     end
 
-    // always @(posedge clk) begin
-    //     if (rst) input_addr <= 0;
-    //     else if (ena) input_addr <= input_addr + 1;
-    //     else input_addr <= 0;
-    // end
+     always @(posedge clk) begin
+         if (rst) input_addr <= 0;
+         else if (ena) input_addr <= input_addr + 1;
+         else input_addr <= 0;
+     end
 
-    // always @(posedge clk) begin
-    //     if (rst) weight_addr <= 0;
-    //     else if (ena) weight_addr <= weight_addr + 1;
-    //     else weight_addr <= 0;
-    // end
-    // bram_activate_0 im2col_input_2828 (
-    //     .clka(clk),    // input wire clka
-    //     .ena(ena),      // input wire ena
-    //     .addra(input_addr),  // input wire [14 : 0] addra
-    //     .douta(input_douta)  // output wire [7 : 0] input_douta
-    // );
+      always @(posedge clk) begin
+          if (rst) weight_addr <= 0;
+          else if (ena) weight_addr <= weight_addr + 1;
+          else weight_addr <= 0;
+      end
+     bram_input2828 im2col_input_2828 (
+         .clka(clk),    // input wire clka
+         .ena(ena),      // input wire ena
+         .addra(input_addr),  // input wire [14 : 0] addra
+         .douta(input_douta)  // output wire [7 : 0] input_douta
+     );
 
-    // bram_weight_0 weight_bram (
-    //     .clka(clk),    // input wire clka
-    //     .ena(ena),      // input wire ena
-    //     .addra(weight_addr),  // input wire [10 : 0] addra
-    //     .douta(weight_douta)  // output wire [63 : 0] douta
-    // );
+     bram_weight_0 weight_bram (
+         .clka(clk),    // input wire clka
+         .ena(ena),      // input wire ena
+         .addra(weight_addr),  // input wire [10 : 0] addra
+         .douta(weight_douta)  // output wire [63 : 0] douta
+     );
 
-	initial begin
-		$fsdbDumpfile("tb_accelerator.fsdb");
-		$fsdbDumpvars("+all");
-	end
+//	initial begin
+//		$fsdbDumpfile("tb_accelerator.fsdb");
+//		$fsdbDumpvars("+all");
+//	end
 	initial #3420000 $finish;
 
 endmodule

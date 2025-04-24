@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module systolic_odd_even_sort (
 	input clk,
 	input rst,

@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "config.v"
+//`include "config.v"
 module systolic_array (
 	input  clk,
 	input  rst,
