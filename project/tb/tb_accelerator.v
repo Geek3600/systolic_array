@@ -45,15 +45,15 @@ module tb_accelerator();
 
     // =========== 输入数据分块
     wire act_enable;
-	reg [8*ACTIVATE_DATA_ADDR_WIDTH-1:0] act_addrs;
-	reg [7:0] act_addr_valid;
+	wire [8*ACTIVATE_DATA_ADDR_WIDTH-1:0] act_addrs;
+	wire [7:0] act_addr_valid;
 	wire [8*8-1:0] output_activate;
 	reg [147*14*14*8-1:0] activate [0:0];
 
     // =========== 权重数据分块
     wire  weight_enable;
-	reg  [8*17-1:0] weight_addrs;
-	reg  [7:0] weight_addr_valid;
+	wire  [8*17-1:0] weight_addrs;
+	wire  [7:0] weight_addr_valid;
 	wire [8*8-1:0] output_weight;
 	reg  [147*8*64-1:0] weight [0:0];
 
@@ -96,7 +96,7 @@ module tb_accelerator();
 	wire [2:0]  tile_row_idx;
 	wire [10:0] tile_col_idx;
 	wire [4:0]  inner_loop_idx;
-	ConvController(
+	ConvController u_convctrl(
 		.clock(clk),
 		.reset(rst),
 		.io_enable(enable),
@@ -174,6 +174,10 @@ module tb_accelerator();
 	assign output_activate[55:48]   = (act_addr_valid[6])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*7-1:ACTIVATE_DATA_ADDR_WIDTH*6])*8 +: 8]: 8'b0;
 	assign output_activate[63:56]   = (act_addr_valid[7])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*8-1:ACTIVATE_DATA_ADDR_WIDTH*7])*8 +: 8]: 8'b0;
 
+	wire [14:0] debug_actaddr;
+	wire [7:0] debug_act;
+	assign debug_actaddr = act_addrs[ACTIVATE_DATA_ADDR_WIDTH*1-1:ACTIVATE_DATA_ADDR_WIDTH*0] >> 3;
+	assign debug_act = output_activate[7:0];
     AutoTilingWeight u_autotilingweight(
 		.clock(clk),
 		.reset(rst),
