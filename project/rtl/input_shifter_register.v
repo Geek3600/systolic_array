@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module input_shifter_register #(
 	parameter DELAY_NUM = 0
 )(

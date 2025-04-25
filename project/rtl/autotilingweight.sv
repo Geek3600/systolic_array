@@ -26,9 +26,9 @@ module AutoTilingWeight(
   reg  [16:0] tileStartY;
   reg  [16:0] rowNum;
   wire [20:0] _GEN = {1'h0, tileStartY, 3'h0};
-  wire [16:0] _GEN_0 = {tileStartX[13:0] * 14'h93, 3'h0};
+  wire [16:0] _GEN_0 = {tileStartX[13:0] * 14'h98, 3'h0};
   wire [16:0] _GEN_1 = {tileStartY[13:0], 3'h0};
-  wire [16:0] _io_rdAddr_7_T_5 = rowNum * 17'h93;
+  wire [16:0] _io_rdAddr_7_T_5 = rowNum * 17'h98;
   wire [20:0] _GEN_2 = {1'h0, tileStartX, 3'h0};
   wire [20:0] _GEN_3 = {4'h0, rowNum};
   wire [20:0] _rowAddr_T_1 = _GEN_2 + _GEN_3;
@@ -74,13 +74,13 @@ module AutoTilingWeight(
   assign io_rdAddr_5 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 17'h5 : 17'h0;
   assign io_rdAddr_6 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 17'h6 : 17'h0;
   assign io_rdAddr_7 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 17'h7 : 17'h0;
-  assign io_addrValid_0 = io_enable & ~((|(_rowAddr_T_1[20:6])) | _GEN > 21'h92);
-  assign io_addrValid_1 = io_enable & ~((|(_rowAddr_T_3[20:6])) | _GEN + 21'h1 > 21'h92);
-  assign io_addrValid_2 = io_enable & ~((|(_rowAddr_T_5[20:6])) | _GEN + 21'h2 > 21'h92);
-  assign io_addrValid_3 = io_enable & ~((|(_rowAddr_T_7[20:6])) | _GEN + 21'h3 > 21'h92);
-  assign io_addrValid_4 = io_enable & ~((|(_rowAddr_T_9[20:6])) | _GEN + 21'h4 > 21'h92);
-  assign io_addrValid_5 = io_enable & ~((|(_rowAddr_T_11[20:6])) | _GEN + 21'h5 > 21'h92);
-  assign io_addrValid_6 = io_enable & ~((|(_rowAddr_T_13[20:6])) | _GEN + 21'h6 > 21'h92);
-  assign io_addrValid_7 = io_enable & ~((|(_rowAddr_T_15[20:6])) | _GEN + 21'h7 > 21'h92);
+  assign io_addrValid_0 = io_enable & ~((|(_rowAddr_T_1[20:6])) | _GEN > 21'h97);
+  assign io_addrValid_1 = io_enable & ~((|(_rowAddr_T_3[20:6])) | _GEN + 21'h1 > 21'h97);
+  assign io_addrValid_2 = io_enable & ~((|(_rowAddr_T_5[20:6])) | _GEN + 21'h2 > 21'h97);
+  assign io_addrValid_3 = io_enable & ~((|(_rowAddr_T_7[20:6])) | _GEN + 21'h3 > 21'h97);
+  assign io_addrValid_4 = io_enable & ~((|(_rowAddr_T_9[20:6])) | _GEN + 21'h4 > 21'h97);
+  assign io_addrValid_5 = io_enable & ~((|(_rowAddr_T_11[20:6])) | _GEN + 21'h5 > 21'h97);
+  assign io_addrValid_6 = io_enable & ~((|(_rowAddr_T_13[20:6])) | _GEN + 21'h6 > 21'h97);
+  assign io_addrValid_7 = io_enable & ~((|(_rowAddr_T_15[20:6])) | _GEN + 21'h7 > 21'h97);
 endmodule
 

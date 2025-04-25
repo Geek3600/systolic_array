@@ -1,13 +1,12 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module top(
-	input  clk,
+	input clk,
 	input rst,
 	input enable
-	input  [`DATASIZE*`ARRAYWIDTH-1:0] in_act,
-	input  [`DATASIZE*`ARRAYWIDTH-1:0] in_weight,
-	output [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top
 );
+	parameter ACTIVATE_DATA_ADDR_WIDTH = 18;
+
 	wire input_buffer_load_en;
 	wire input_buffer_out_en;
 	wire input_buffer_delay_clear;
@@ -29,27 +28,26 @@ module top(
 	wire softmax_en;
     wire relu_en;
 
-	// reg [`DATASIZE*`ARRAYWIDTH-1:0] in_act;
-	// reg [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
-	// wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top;
+	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top;
 
     // =========== 输入数据分块
     wire act_enable;
-	reg [8*ACTIVATE_DATA_ADDR_WIDTH-1:0] act_addrs;
-	reg [7:0] act_addr_valid;
+	wire [8*ACTIVATE_DATA_ADDR_WIDTH-1:0] act_addrs;
+	wire [7:0] act_addr_valid;
 	wire [8*8-1:0] output_activate;
 
     // =========== 权重数据分块
     wire  weight_enable;
-	reg  [8*17-1:0] weight_addrs;
-	reg  [7:0] weight_addr_valid;
+	wire  [8*17-1:0] weight_addrs;
+	wire  [7:0] weight_addr_valid;
 	wire [8*8-1:0] output_weight;
 
 
-	wire [2:0]  tile_row_idx;
-	wire [10:0] tile_col_idx;
-	wire [4:0]  inner_loop_idx;
-	ConvController(
+	wire [2:0] tile_row_idx;
+	wire [4:0] tile_col_idx;
+	wire [4:0] inner_loop_idx;
+
+	ConvController u_cu_conctrl(
 		.clock(clk),
 		.reset(rst),
 		.io_enable(enable),
@@ -90,8 +88,8 @@ module top(
 		.write_weight_en(write_weight_en),
         .softmax_en(softmax_en),
         .relu_en(relu_en),
-		.in_act(in_act),
-		.in_weight(in_weight),
+		.in_act(output_weight),
+		.in_weight(output_activate),
 		.out_top(out_top)
 	);
 
@@ -118,15 +116,7 @@ module top(
 		.io_addrValid_6( act_addr_valid[6]),
 		.io_addrValid_7( act_addr_valid[7])
 	);
-	assign output_activate[7:0]     = (act_addr_valid[0])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*1-1:ACTIVATE_DATA_ADDR_WIDTH*0])*8 +: 8]: 8'b0;
-	assign output_activate[15:8]    = (act_addr_valid[1])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*2-1:ACTIVATE_DATA_ADDR_WIDTH*1])*8 +: 8]: 8'b0;
-	assign output_activate[23:16]   = (act_addr_valid[2])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*3-1:ACTIVATE_DATA_ADDR_WIDTH*2])*8 +: 8]: 8'b0;
-	assign output_activate[31:24]   = (act_addr_valid[3])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*4-1:ACTIVATE_DATA_ADDR_WIDTH*3])*8 +: 8]: 8'b0;
-	assign output_activate[39:32]   = (act_addr_valid[4])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*5-1:ACTIVATE_DATA_ADDR_WIDTH*4])*8 +: 8]: 8'b0;
-	assign output_activate[47:40]   = (act_addr_valid[5])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*6-1:ACTIVATE_DATA_ADDR_WIDTH*5])*8 +: 8]: 8'b0;
-	assign output_activate[55:48]   = (act_addr_valid[6])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*7-1:ACTIVATE_DATA_ADDR_WIDTH*6])*8 +: 8]: 8'b0;
-	assign output_activate[63:56]   = (act_addr_valid[7])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*8-1:ACTIVATE_DATA_ADDR_WIDTH*7])*8 +: 8]: 8'b0;
-
+	
     AutoTilingWeight u_autotilingweight(
 		.clock(clk),
 		.reset(rst),
@@ -149,12 +139,22 @@ module top(
 		.io_addrValid_6( weight_addr_valid[6]),
 		.io_addrValid_7( weight_addr_valid[7])
 	);
-	assign output_weight[7:0]     = (weight_addr_valid[0])  ? weight[0][(weight_addrs[16:0]   )*8 +: 8]: 8'b0;
-	assign output_weight[15:8]    = (weight_addr_valid[1])  ? weight[0][(weight_addrs[33:17]  )*8 +: 8]: 8'b0;
-	assign output_weight[23:16]   = (weight_addr_valid[2])  ? weight[0][(weight_addrs[50:34]  )*8 +: 8]: 8'b0;
-	assign output_weight[31:24]   = (weight_addr_valid[3])  ? weight[0][(weight_addrs[67:51]  )*8 +: 8]: 8'b0;
-	assign output_weight[39:32]   = (weight_addr_valid[4])  ? weight[0][(weight_addrs[84:68]  )*8 +: 8]: 8'b0;
-	assign output_weight[47:40]   = (weight_addr_valid[5])  ? weight[0][(weight_addrs[101:85] )*8 +: 8]: 8'b0;
-	assign output_weight[55:48]   = (weight_addr_valid[6])  ? weight[0][(weight_addrs[118:102])*8 +: 8]: 8'b0;
-	assign output_weight[63:56]   = (weight_addr_valid[7])  ? weight[0][(weight_addrs[135:119])*8 +: 8]: 8'b0;
+
+	wire [13: 0] debug_weight_addr = weight_addrs[16:0] >> 3;
+	wire [14: 0] debug_input_addr = act_addrs[17:0] >> 3;
+
+	bram_input28 im2col_input_2828 (
+		.clka(clk),    // input wire clka
+		.ena(weight_enable),      // input wire ena
+		.addra(debug_input_addr[11:0]),  // input wire [14 : 0] addra
+		.douta(output_activate)  // output wire [63 : 0] input_douta
+	);
+
+	bram_weight_0 weight_bram (
+		.clka(clk),    // input wire clka
+		.ena(act_enable),      // input wire ena
+		.addra(debug_weight_addr[10:0]),  // input wire [10 : 0] addra
+		.douta(output_weight)  // output wire [63 : 0] douta
+	);
+
 endmodule

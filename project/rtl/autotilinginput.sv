@@ -27,9 +27,9 @@ module AutoTilingInput(
   reg  [17:0] tileStartY;
   reg  [17:0] rowNum;
   wire [21:0] _GEN = {1'h0, tileStartY, 3'h0};
-  wire [17:0] _GEN_0 = {tileStartX[14:0] * 15'hC4, 3'h0};
+  wire [17:0] _GEN_0 = {tileStartX[14:0] * 15'hC8, 3'h0};
   wire [17:0] _GEN_1 = {tileStartY[14:0], 3'h0};
-  wire [17:0] _io_rdAddr_7_T_5 = rowNum * 18'hC4;
+  wire [17:0] _io_rdAddr_7_T_5 = rowNum * 18'hC8;
   wire [21:0] _GEN_2 = {1'h0, tileStartX, 3'h0};
   wire [21:0] _GEN_3 = {4'h0, rowNum};
   always @(posedge clock) begin
@@ -73,13 +73,13 @@ module AutoTilingInput(
   assign io_rdAddr_5 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 18'h5 : 18'h0;
   assign io_rdAddr_6 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 18'h6 : 18'h0;
   assign io_rdAddr_7 = io_enable ? _GEN_0 + _GEN_1 + _io_rdAddr_7_T_5 + 18'h7 : 18'h0;
-  assign io_addrValid_0 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN > 22'hC3);
-  assign io_addrValid_1 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h1 > 22'hC3);
-  assign io_addrValid_2 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h2 > 22'hC3);
-  assign io_addrValid_3 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h3 > 22'hC3);
-  assign io_addrValid_4 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h4 > 22'hC3);
-  assign io_addrValid_5 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h5 > 22'hC3);
-  assign io_addrValid_6 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h6 > 22'hC3);
-  assign io_addrValid_7 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h92 | _GEN + 22'h7 > 22'hC3);
+  assign io_addrValid_0 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN > 22'hC7);
+  assign io_addrValid_1 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h1 > 22'hC7);
+  assign io_addrValid_2 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h2 > 22'hC7);
+  assign io_addrValid_3 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h3 > 22'hC7);
+  assign io_addrValid_4 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h4 > 22'hC7);
+  assign io_addrValid_5 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h5 > 22'hC7);
+  assign io_addrValid_6 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h6 > 22'hC7);
+  assign io_addrValid_7 = io_enable & ~(_GEN_2 + _GEN_3 > 22'h97 | _GEN + 22'h7 > 22'hC7);
 endmodule
 
