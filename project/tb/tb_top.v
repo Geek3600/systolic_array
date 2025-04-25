@@ -29,7 +29,9 @@ module tb_top();
 		.rst(rst),
 		.enable(enable)
 	);
-	
+
+
+	//=================波形文件===================
 	initial begin
 		$fsdbDumpfile("tb_top.fsdb");
 		$fsdbDumpvars("+all");
