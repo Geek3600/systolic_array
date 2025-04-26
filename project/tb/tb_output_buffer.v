@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module tb_output_buffer();
 	parameter CLOCK_PERIOD = 10;
 	reg clk;

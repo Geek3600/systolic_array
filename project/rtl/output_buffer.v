@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module output_buffer (
 	input clk,
 	input rst,
@@ -49,6 +49,9 @@ module output_buffer (
 			);
 		end
 	endgenerate
-
+	ila_1 u_debugger (
+		.clk(clk),
+		.probe0(out_res)
+	);
 endmodule
 

@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module output_shifter_register(
 	input clk,
 	input rst,
@@ -47,14 +47,16 @@ module output_shifter_register(
 				else if (acc_clear) begin // 轮到下一分块计算，需要清空累加寄存器
 					acc_mem[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE] <= 0;
 				end
-				else if (out_en) begin
-					acc_mem <= {{`OUTPUT_BUF_DATASIZE{1'b0}}, acc_mem[`ARRAYHEIGHT*`OUTPUT_BUF_DATASIZE-1:`OUTPUT_BUF_DATASIZE]};
-				end
+				// else if (out_en) begin
+				// 	acc_mem <= {{`OUTPUT_BUF_DATASIZE{1'b0}}, acc_mem[`ARRAYHEIGHT*`OUTPUT_BUF_DATASIZE-1:`OUTPUT_BUF_DATASIZE]};
+				// end
 				else begin // 其他时间保持原值
 					acc_mem[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE] <= acc_mem[(i+1)*`OUTPUT_BUF_DATASIZE-1:i*`OUTPUT_BUF_DATASIZE];
 				end
 			end
 		end
 	endgenerate
-	assign out = (out_en) ? acc_mem[`OUTPUT_BUF_DATASIZE-1:0] : 0;
+	assign out = acc_mem[`ARRAYHEIGHT*`OUTPUT_BUF_DATASIZE-1:(`ARRAYHEIGHT-1)*`OUTPUT_BUF_DATASIZE];
+	
+
 endmodule

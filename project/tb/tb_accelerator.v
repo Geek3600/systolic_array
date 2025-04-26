@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module tb_accelerator();
 	parameter CLOCK_PERIOD = 10;
 	reg clk;
@@ -18,6 +18,13 @@ module tb_accelerator();
 
 	//=================测试行为===================
 	reg enable;
+	initial begin
+		enable = 0;
+		#CLOCK_PERIOD;
+		enable = 1;
+	end
+
+
 	wire input_buffer_load_en;
 	wire input_buffer_out_en;
 	wire input_buffer_delay_clear;
@@ -39,8 +46,6 @@ module tb_accelerator();
 	wire softmax_en;
     wire relu_en;
 
-	reg [`DATASIZE*`ARRAYWIDTH-1:0] in_act;
-	reg [`DATASIZE*`ARRAYWIDTH-1:0] in_weight;
 	wire  [`OUTPUT_BUF_DATASIZE*`ARRAYWIDTH-1:0] out_top;
 
     // =========== 输入数据分块
@@ -48,20 +53,15 @@ module tb_accelerator();
 	wire [8*ACTIVATE_DATA_ADDR_WIDTH-1:0] act_addrs;
 	wire [7:0] act_addr_valid;
 	wire [8*8-1:0] output_activate;
-	reg [147*14*14*8-1:0] activate [0:0];
 
     // =========== 权重数据分块
     wire  weight_enable;
 	wire  [8*17-1:0] weight_addrs;
 	wire  [7:0] weight_addr_valid;
 	wire [8*8-1:0] output_weight;
-	reg  [147*8*64-1:0] weight [0:0];
 
-	initial begin
-		$readmemh("/home/hyyuan/systolic-array/test/conv1_kernel.dat",weight);
-		$readmemh("/home/hyyuan/systolic-array/test/im2col_input_28_28.dat",activate);
-	end
 
+<<<<<<< HEAD
 	initial begin
 		enable = 0;
 		#CLOCK_PERIOD;
@@ -97,6 +97,12 @@ module tb_accelerator();
 	wire [10:0] tile_col_idx;
 	wire [4:0]  inner_loop_idx;
 	ConvController u_convctrl(
+=======
+	wire [2:0] tile_row_idx;
+	wire [4:0] tile_col_idx;
+	wire [4:0] inner_loop_idx;
+	ConvController u_cu_conctrl(
+>>>>>>> d7952977e09ba6aaf1eda18fd199d89c65da5e5f
 		.clock(clk),
 		.reset(rst),
 		.io_enable(enable),
@@ -137,8 +143,8 @@ module tb_accelerator();
 		.write_weight_en(write_weight_en),
         .softmax_en(softmax_en),
         .relu_en(relu_en),
-		.in_act(in_act),
-		.in_weight(in_weight),
+		.in_act(output_weight),
+		.in_weight(output_activate),
 		.out_top(out_top)
 	);
 
@@ -165,6 +171,7 @@ module tb_accelerator();
 		.io_addrValid_6( act_addr_valid[6]),
 		.io_addrValid_7( act_addr_valid[7])
 	);
+<<<<<<< HEAD
 	assign output_activate[7:0]     = (act_addr_valid[0])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*1-1:ACTIVATE_DATA_ADDR_WIDTH*0])*8 +: 8]: 8'b0;
 	assign output_activate[15:8]    = (act_addr_valid[1])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*2-1:ACTIVATE_DATA_ADDR_WIDTH*1])*8 +: 8]: 8'b0;
 	assign output_activate[23:16]   = (act_addr_valid[2])  ? activate[0][(act_addrs[ACTIVATE_DATA_ADDR_WIDTH*3-1:ACTIVATE_DATA_ADDR_WIDTH*2])*8 +: 8]: 8'b0;
@@ -178,6 +185,9 @@ module tb_accelerator();
 	wire [7:0] debug_act;
 	assign debug_actaddr = act_addrs[ACTIVATE_DATA_ADDR_WIDTH*1-1:ACTIVATE_DATA_ADDR_WIDTH*0] >> 3;
 	assign debug_act = output_activate[7:0];
+=======
+	
+>>>>>>> d7952977e09ba6aaf1eda18fd199d89c65da5e5f
     AutoTilingWeight u_autotilingweight(
 		.clock(clk),
 		.reset(rst),
@@ -200,58 +210,32 @@ module tb_accelerator();
 		.io_addrValid_6( weight_addr_valid[6]),
 		.io_addrValid_7( weight_addr_valid[7])
 	);
-	assign output_weight[7:0]     = (weight_addr_valid[0])  ? weight[0][(weight_addrs[16:0]   )*8 +: 8]: 8'b0;
-	assign output_weight[15:8]    = (weight_addr_valid[1])  ? weight[0][(weight_addrs[33:17]  )*8 +: 8]: 8'b0;
-	assign output_weight[23:16]   = (weight_addr_valid[2])  ? weight[0][(weight_addrs[50:34]  )*8 +: 8]: 8'b0;
-	assign output_weight[31:24]   = (weight_addr_valid[3])  ? weight[0][(weight_addrs[67:51]  )*8 +: 8]: 8'b0;
-	assign output_weight[39:32]   = (weight_addr_valid[4])  ? weight[0][(weight_addrs[84:68]  )*8 +: 8]: 8'b0;
-	assign output_weight[47:40]   = (weight_addr_valid[5])  ? weight[0][(weight_addrs[101:85] )*8 +: 8]: 8'b0;
-	assign output_weight[55:48]   = (weight_addr_valid[6])  ? weight[0][(weight_addrs[118:102])*8 +: 8]: 8'b0;
-	assign output_weight[63:56]   = (weight_addr_valid[7])  ? weight[0][(weight_addrs[135:119])*8 +: 8]: 8'b0;
+
+    // wire [63:0] input_douta;
+    // wire [63:0] weight_douta;
+
+	wire [13: 0] debug_weight_addr = weight_addrs[16:0] >> 3;
+	wire [14: 0] debug_input_addr = act_addrs[17:0] >> 3;
+
+	bram_input28 im2col_input_2828 (
+		.clka(clk),    // input wire clka
+		.ena(weight_enable),      // input wire ena
+		.addra(debug_input_addr[11:0]),  // input wire [14 : 0] addra
+		.douta(output_activate)  // output wire [63 : 0] input_douta
+	);
+
+	bram_weight_0 weight_bram (
+		.clka(clk),    // input wire clka
+		.ena(act_enable),      // input wire ena
+		.addra(debug_weight_addr[10:0]),  // input wire [10 : 0] addra
+		.douta(output_weight)  // output wire [63 : 0] douta
+	);
 
 
-	 reg ena;
-     reg [11:0] input_addr;
-      reg [10:0] weight_addr;
-     wire [63:0] input_douta;
-      wire [63:0] weight_douta;
-
-     initial begin
-         ena = 0;
-         #CLOCK_PERIOD;
-         ena = 1;
-         #CLOCK_PERIOD;
-     end
-
-     always @(posedge clk) begin
-         if (rst) input_addr <= 0;
-         else if (ena) input_addr <= input_addr + 1;
-         else input_addr <= 0;
-     end
-
-      always @(posedge clk) begin
-          if (rst) weight_addr <= 0;
-          else if (ena) weight_addr <= weight_addr + 1;
-          else weight_addr <= 0;
-      end
-     bram_input2828 im2col_input_2828 (
-         .clka(clk),    // input wire clka
-         .ena(ena),      // input wire ena
-         .addra(input_addr),  // input wire [14 : 0] addra
-         .douta(input_douta)  // output wire [7 : 0] input_douta
-     );
-
-     bram_weight_0 weight_bram (
-         .clka(clk),    // input wire clka
-         .ena(ena),      // input wire ena
-         .addra(weight_addr),  // input wire [10 : 0] addra
-         .douta(weight_douta)  // output wire [63 : 0] douta
-     );
-
-//	initial begin
-//		$fsdbDumpfile("tb_accelerator.fsdb");
-//		$fsdbDumpvars("+all");
-//	end
+	initial begin
+		$fsdbDumpfile("tb_accelerator.fsdb");
+		$fsdbDumpvars("+all");
+	end
 	initial #3420000 $finish;
 
 endmodule

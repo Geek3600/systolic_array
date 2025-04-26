@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module preprocess ( // 1.0111
     input  [`OUTPUT_BUF_DATASIZE-1:0] lnF, //32位定点数 lnf 22位整数 10位小数
     input  [`OUTPUT_BUF_DATASIZE-1:0] Xi, //32位整数数

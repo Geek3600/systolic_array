@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 
 // 4个数排序，第6个时钟输出排序结果，第7个周期可读到
 module sort4 (

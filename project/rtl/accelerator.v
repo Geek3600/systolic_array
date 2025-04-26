@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-//`include "config.v"
+`include "config.v"
 module accelerator(
 	input  clk,
 	input  rst,
@@ -86,6 +86,6 @@ module accelerator(
 
 	// assign out_top = (softmax_en) ? out_softmax :
 	// 				 (relu_en)    ? out_softmax : out_res;
-	assign out_top = out_relu;
+	assign out_top = out_res;
 
 endmodule

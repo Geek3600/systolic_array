@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PROJECT_NAME=board_level
+PROJECT_NAME=top
 # top module
-VIVADO_TOP_MODULES=accelerator
+VIVADO_TOP_MODULES=top
 
 ###########################################
 # for tcl flow
@@ -22,6 +22,7 @@ VIVADO_BD_TOP_MODULES=
 # source files
 VIVADO_VERILOG_FILELIST=(
     rtl/accelerator.v
+    rtl/top.v
     
     # 输入缓冲区顶层和组件
     rtl/input_buffer.v
@@ -77,8 +78,9 @@ VIVADO_INC_PATH_FILELIST=(
 )
 VIVADO_GLOBAL_INC_FILE_LIST=
 VIVADO_XCI_FILELIST=(
-    dsp_macro_0.xci
-    # bram_input2828.xci
+    ip/dsp_macro_0/dsp_macro_0.xci
+    ip/bram_input28/bram_input28.xci
+    ip/bram_weight_0/bram_weight_0.xci
 )
 VIVADO_BD_FILE=
 VIVADO_BD_TCL_FILELIST=
@@ -86,7 +88,7 @@ VIVADO_XDC_FILELIST=(
     xdc/clock.xdc
 )
 VIVADO_SIM_FILELIST=(
-    tb/tb_accelerator.v
+    tb/tb_top.v
 )
 VIVADO_POST_SYNTH_SCRIPTS_FILELIST=
 
